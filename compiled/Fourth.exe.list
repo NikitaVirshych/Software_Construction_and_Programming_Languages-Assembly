@@ -2,7 +2,7 @@ EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
  
 Fourth.exe -- emu8086 assembler version: 4.05  
  
-[ 19.04.2020  --  23:20:29 ] 
+[ 20.04.2020  --  10:11:01 ] 
  
 ===================================================================================================
 [LINE]     LOC: MACHINE CODE                          SOURCE
@@ -404,14 +404,14 @@ Fourth.exe -- emu8086 assembler version: 4.05
 [ 394]    03A9: 80 3F 00                              cmp [bx], 00h
 [ 395]    03AC: 74 1C                                 je notCollision                 ;Клетка пустая - столкновения не произошло
 [ 396]    03AE: 83 06 78 0A 0A                        add score, 10                   ;Увеличение счета
-[ 397]    03B3: FF 0E 7A 0A                           dec winCount                    ;Уменьшения счета до победы
-[ 398]    03B7: E8 49 FD                              call printScore                 ;Вывод счета
-[ 399]    03BA: BA 01 00                              mov dx, 01h                     ;Метка столкновения
-[ 400]        :                                       
-[ 401]        :                                       ;"Разрушение" клетки или изменение цвета
-[ 402]    03BD: 80 3F 50                              cmp [bx], 50h
-[ 403]    03C0: 75 05                                 jne changeColour
-[ 404]    03C2: C6 07 00                              mov [bx], 00h
+[ 397]    03B3: E8 4D FD                              call printScore                 ;Вывод счета
+[ 398]    03B6: BA 01 00                              mov dx, 01h                     ;Метка столкновения
+[ 399]        :                                       
+[ 400]        :                                       ;"Разрушение" клетки или изменение цвета
+[ 401]    03B9: 80 3F 50                              cmp [bx], 50h
+[ 402]    03BC: 75 09                                 jne changeColour
+[ 403]    03BE: C6 07 00                              mov [bx], 00h
+[ 404]    03C1: FF 0E 7A 0A                           dec winCount                    ;Уменьшения счета до победы
 [ 405]    03C5: EB 03                                 jmp notCollision
 [ 406]        :                                       
 [ 407]        :                                       ;Изменение цвета клетки
@@ -553,7 +553,7 @@ Fourth.exe -- emu8086 assembler version: 4.05
 [ 543]        :                                       
 [ 544]    0445:                                       restart:
 [ 545]        :                                       ;Стартовые значения величин
-[ 546]    0445: C7 06 7A 0A 1E 00                     mov winCount, 30
+[ 546]    0445: C7 06 7A 0A 1E 00                     mov winCount, 30                ;220 клеток всего
 [ 547]    044B: C7 06 78 0A 00 00                     mov score, 0
 [ 548]    0451: C7 06 76 0A 00 00                     mov previousTime, 0
 [ 549]    0457: C7 06 70 0A 12 00                     mov ballPositionY, 18
@@ -988,8 +988,8 @@ EXE HEADER - bytes from 0000 to 01FF inclusive.
 000F: 00      -   SS - stack segment (h.byte)
 0010: 00      -   SP - stack pointer (l.byte)
 0011: 01      -   SP - stack pointer (h.byte)
-0012: 31      -   check sum (l.byte)
-0013: 47      -   check sum (h.byte)
+0012: 2D      -   check sum (l.byte)
+0013: 43      -   check sum (h.byte)
 0014: 37      -   IP - instruction pointer (l.byte)
 0015: 03      -   IP - instruction pointer (h.byte)
 0016: 10      -   CS - code segment (l.byte)

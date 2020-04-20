@@ -394,14 +394,14 @@ checkCollision proc
     cmp [bx], 00h
     je notCollision                 ;Клетка пустая - столкновения не произошло
     add score, 10                   ;Увеличение счета
-    dec winCount                    ;Уменьшения счета до победы
     call printScore                 ;Вывод счета 
     mov dx, 01h                     ;Метка столкновения 
     
     ;"Разрушение" клетки или изменение цвета
     cmp [bx], 50h
     jne changeColour   
-    mov [bx], 00h
+    mov [bx], 00h   
+    dec winCount                    ;Уменьшения счета до победы
     jmp notCollision
     
     ;Изменение цвета клетки
@@ -543,7 +543,7 @@ main:
     
     restart:
     ;Стартовые значения величин 
-    mov winCount, 30
+    mov winCount, 30                ;220 клеток всего
     mov score, 0 
     mov previousTime, 0  
     mov ballPositionY, 18
