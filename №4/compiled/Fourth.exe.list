@@ -1,0 +1,1012 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+Fourth.exe -- emu8086 assembler version: 4.05  
+ 
+[ 20.04.2020  --  10:11:01 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .model small
+[   2]        :                                       .stack 100h
+[   3]        :                                       
+[   4]        :                                       .code
+[   5]    0100: E9 34 03                              jmp main
+[   6]        :                                       
+[   7]        :                                       ;Вывод счета
+[   8]    0103:                                       printScore proc
+[   9]    0103: 60                                    pusha
+[  10]    0104: 33 C9                                 xor cx, cx
+[  11]    0106: A1 78 0A                              mov ax, score
+[  12]    0109: 33 D2                                 xor dx, dx
+[  13]    010B: BE 0A 00                              mov si, 10
+[  14]        :                                       ;Запись цифр числа в стек
+[  15]    010E:                                       loadStack:
+[  16]    010E: F7 F6                                 div si 			  		
+[  17]    0110: 80 C2 30                              add dl, '0'
+[  18]    0113: 52                                    push dx
+[  19]    0114: 33 D2                                 xor dx, dx
+[  20]    0116: 41                                    inc cx
+[  21]    0117: 3D 00 00                              cmp ax, 0
+[  22]    011A: 75 F2                                 jne loadStack
+[  23]    011C: BB D2 01                              mov bx, 466
+[  24]        :                                       ;Запись цифр из стека в видеопамять
+[  25]    011F:                                       printStack:
+[  26]    011F: 5A                                    pop dx
+[  27]    0120: 1E                                    push ds
+[  28]    0121: B8 00 B8                              mov ax, 0b800h
+[  29]    0124: 8E D8                                 mov ds, ax
+[  30]    0126: 88 17                                 mov [bx], dl
+[  31]    0128: 43                                    inc bx
+[  32]    0129: C6 07 07                              mov [bx], 07h
+[  33]    012C: 43                                    inc bx
+[  34]    012D: 1F                                    pop ds
+[  35]    012E: E2 EF                                 loop printStack
+[  36]    0130: 61                                    popa
+[  37]    0131: C3                                    ret
+[  38]        :                                       endp
+[  39]        :                                       
+[  40]        :                                       ;Очистка экрана и вывод рамок
+[  41]    0132:                                       setScreen proc
+[  42]    0132: 51                                    push cx
+[  43]    0133: 50                                    push ax
+[  44]    0134: 56                                    push si
+[  45]    0135: 1E                                    push ds
+[  46]    0136: 53                                    push bx
+[  47]    0137: 52                                    push dx
+[  48]        :                                       
+[  49]    0138: B4 02                                 mov ah, 02h
+[  50]    013A: B7 00                                 mov bh, 0
+[  51]    013C: 33 D2                                 xor dx, dx
+[  52]    013E: CD 10                                 int 10h
+[  53]        :                                       
+[  54]    0140: B8 00 B8                              mov ax, 0b800h                  ;Адрес видеопамяти
+[  55]    0143: 8E D8                                 mov ds, ax
+[  56]        :                                       
+[  57]        :                                       ;Очистка экрана
+[  58]    0145: B4 00                                 mov ah, 00
+[  59]    0147: B0 01                                 mov al, 01
+[  60]    0149: CD 10                                 int 10h
+[  61]        :                                       
+[  62]    014B: 33 F6                                 xor si, si
+[  63]    014D: 46                                    inc si
+[  64]        :                                       ;Верхняя рамка
+[  65]    014E: B9 28 00                              mov cx, 40
+[  66]    0151:                                       screenTopBorder:
+[  67]    0151: C6 04 70                              mov [si], 70h
+[  68]    0154: 83 C6 02                              add si, 2
+[  69]    0157: E2 F8                                 loop screenTopBorder
+[  70]        :                                       
+[  71]        :                                       ;Боковые рамки
+[  72]    0159: B9 17 00                              mov cx, 23
+[  73]    015C:                                       screenSideBorders:
+[  74]    015C: C6 04 70                              mov [si], 70h
+[  75]    015F: 83 C6 4E                              add si, 78
+[  76]    0162: C6 04 70                              mov [si], 70h
+[  77]    0165: 83 C6 02                              add si, 2
+[  78]    0168: E2 F2                                 loop screenSideBorders
+[  79]        :                                       
+[  80]        :                                       ;Нижняя рамка
+[  81]    016A: B9 28 00                              mov cx, 40
+[  82]    016D:                                       screenBottomBorder:
+[  83]    016D: C6 04 70                              mov [si], 70h
+[  84]    0170: 83 C6 02                              add si, 2
+[  85]    0173: E2 F8                                 loop screenBottomBorder
+[  86]        :                                       
+[  87]        :                                       ;Рамки игрового поля
+[  88]        :                                       ;Боковые
+[  89]    0175: B9 02 00                              mov cx, 2
+[  90]    0178:                                       gameplaySideBorders:
+[  91]    0178: B0 50                                 mov al, 80
+[  92]    017A: F6 E1                                 mul cl
+[  93]    017C: 05 04 00                              add ax, 4
+[  94]    017F: 8B F0                                 mov si, ax
+[  95]    0181: 46                                    inc si
+[  96]    0182: C6 04 70                              mov [si], 70h
+[  97]    0185: 83 C6 2E                              add si, 46
+[  98]    0188: C6 04 70                              mov [si], 70h
+[  99]    018B: 41                                    inc cx
+[ 100]    018C: 83 F9 17                              cmp cx, 23
+[ 101]    018F: 74 02                                 je gameplaySideBordersEnd
+[ 102]    0191: EB E5                                 jmp gameplaySideBorders
+[ 103]        :                                       
+[ 104]        :                                       ;Верхняя
+[ 105]    0193:                                       gameplaySideBordersEnd:
+[ 106]    0193: B9 02 00                              mov cx, 2
+[ 107]    0196:                                       gameplayTopBorder:
+[ 108]    0196: B0 02                                 mov al, 2
+[ 109]    0198: F6 E1                                 mul cl
+[ 110]    019A: 05 A0 00                              add ax, 160
+[ 111]    019D: 8B F0                                 mov si, ax
+[ 112]    019F: 46                                    inc si
+[ 113]    01A0: C6 04 70                              mov [si], 70h
+[ 114]    01A3: 41                                    inc cx
+[ 115]    01A4: 83 F9 1A                              cmp cx, 26
+[ 116]    01A7: 74 02                                 je gameplayTopBorderEnd
+[ 117]    01A9: EB EB                                 jmp gameplayTopBorder
+[ 118]        :                                       
+[ 119]        :                                       ;"Очки"
+[ 120]    01AB:                                       gameplayTopBorderEnd:
+[ 121]    01AB: C6 06 C6 01 53                        mov [454], 'S'
+[ 122]    01B0: C6 06 C8 01 63                        mov [456], 'c'
+[ 123]    01B5: C6 06 CA 01 6F                        mov [458], 'o'
+[ 124]    01BA: C6 06 CC 01 72                        mov [460], 'r'
+[ 125]    01BF: C6 06 CE 01 65                        mov [462], 'e'
+[ 126]    01C4: C6 06 D0 01 3A                        mov [464], ':'
+[ 127]    01C9: C6 06 67 02 20                        mov [615], 20h
+[ 128]    01CE: C6 06 68 02 3E                        mov [616], '>'
+[ 129]    01D3: C6 06 6B 02 30                        mov [619], 30h
+[ 130]    01D8: C6 06 6C 02 3E                        mov [620], '>'
+[ 131]    01DD: C6 06 6F 02 40                        mov [623], 40h
+[ 132]    01E2: C6 06 70 02 3E                        mov [624], '>'
+[ 133]    01E7: C6 06 73 02 50                        mov [627], 50h
+[ 134]        :                                       
+[ 135]    01EC: 32 FF                                 xor bh, bh
+[ 136]    01EE: B6 19                                 mov dh, 25
+[ 137]    01F0: B4 02                                 mov ah, 02
+[ 138]    01F2: CD 10                                 int 10h
+[ 139]    01F4: 5A                                    pop dx
+[ 140]    01F5: 5B                                    pop bx
+[ 141]    01F6: 1F                                    pop ds
+[ 142]    01F7: 5E                                    pop si
+[ 143]    01F8: 58                                    pop ax
+[ 144]    01F9: 59                                    pop cx
+[ 145]    01FA: C3                                    ret
+[ 146]        :                                       endp
+[ 147]        :                                       
+[ 148]        :                                       ;Перенос уровня в playerField
+[ 149]    01FB:                                       initPlayField proc
+[ 150]    01FB: 51                                    push cx
+[ 151]    01FC: 53                                    push bx
+[ 152]    01FD: 50                                    push ax
+[ 153]    01FE: 06                                    push es
+[ 154]    01FF: 57                                    push di
+[ 155]    0200: 56                                    push si
+[ 156]        :                                       
+[ 157]    0201: 8C D8                                 mov ax, ds
+[ 158]    0203: 8E C0                                 mov es, ax
+[ 159]    0205: BE 00 02                              mov si, offset level
+[ 160]    0208: BF 74 00                              mov di, offset playField
+[ 161]    020B: B9 8C 01                              mov cx, 396
+[ 162]    020E: F3 A4                                 rep movsb                       ;Перенос уровня в playField
+[ 163]        :                                       
+[ 164]    0210: 5E                                    pop si
+[ 165]    0211: 5F                                    pop di
+[ 166]    0212: 07                                    pop es
+[ 167]    0213: 58                                    pop ax
+[ 168]    0214: 5B                                    pop bx
+[ 169]    0215: 59                                    pop cx
+[ 170]    0216: C3                                    ret
+[ 171]        :                                       endp
+[ 172]        :                                       
+[ 173]        :                                       ;Вывод уровня на экран
+[ 174]    0217:                                       displayPlayField proc
+[ 175]    0217: 50                                    push ax
+[ 176]    0218: 06                                    push es
+[ 177]    0219: 51                                    push cx
+[ 178]    021A: 57                                    push di
+[ 179]    021B: 56                                    push si
+[ 180]        :                                       
+[ 181]    021C: B8 00 B8                              mov ax, 0B800h                  ;Видеопамять
+[ 182]    021F: 8E C0                                 mov es, ax
+[ 183]    0221: B9 13 00                              mov cx, 19                      ;Кол-во рядов
+[ 184]    0224: BF F7 00                              mov di, 247                     ;Байт атрибута первого символа игрового поля
+[ 185]    0227: BE 74 00                              mov si, offset playField
+[ 186]        :                                       
+[ 187]    022A:                                       rowLoop:
+[ 188]    022A: 51                                    push cx
+[ 189]    022B: B9 16 00                              mov cx, 22                  ;Символов в ряду
+[ 190]        :                                       
+[ 191]    022E:                                       colLoop:
+[ 192]    022E: A4                                    movsb                       ;Копирование si -> di
+[ 193]    022F: 47                                    inc di                      ;Пропуск бита кода символа
+[ 194]    0230: E2 FC                                 loop colLoop
+[ 195]    0232: 83 C7 24                              add di, 36                  ;Следующий ряд
+[ 196]    0235: 59                                    pop cx
+[ 197]        :                                       
+[ 198]    0236: E2 F2                                 loop rowLoop
+[ 199]        :                                       
+[ 200]    0238: 5E                                    pop si
+[ 201]    0239: 5F                                    pop di
+[ 202]    023A: 59                                    pop cx
+[ 203]    023B: 07                                    pop es
+[ 204]    023C: 58                                    pop ax
+[ 205]    023D: C3                                    ret
+[ 206]        :                                       endp
+[ 207]        :                                       
+[ 208]        :                                       ;Отрисовка платформы
+[ 209]    023E:                                       displayPaddle proc
+[ 210]    023E: 1E                                    push ds
+[ 211]        :                                       
+[ 212]    023F: BB 74 0A                              mov bx, offset paddlePosition
+[ 213]    0242: 8B 17                                 mov dx, [bx]
+[ 214]        :                                       
+[ 215]    0244: B8 00 B8                              mov ax, 0b800h
+[ 216]    0247: 8E D8                                 mov ds, ax
+[ 217]    0249: BB E7 06                              mov bx, 1767                    ;Начало строки, в которой движется платформа
+[ 218]    024C: B9 16 00                              mov cx, 22
+[ 219]        :                                       ;Очистка строки
+[ 220]    024F:                                       loop21:
+[ 221]    024F: C6 07 00                              mov [bx], 00h
+[ 222]    0252: 83 C3 02                              add bx, 2
+[ 223]    0255: E2 F8                                 loop loop21
+[ 224]        :                                       
+[ 225]    0257: BB E7 06                              mov bx, 1767
+[ 226]    025A: 03 DA                                 add bx, dx
+[ 227]    025C: 03 DA                                 add bx, dx
+[ 228]    025E: B9 04 00                              mov cx, 4
+[ 229]        :                                       ;Вывод платформы
+[ 230]    0261:                                       loop31:
+[ 231]    0261: C6 07 70                              mov [bx], 070h
+[ 232]    0264: 83 C3 02                              add bx, 2
+[ 233]    0267: E2 F8                                 loop loop31
+[ 234]        :                                       
+[ 235]    0269: 1F                                    pop ds
+[ 236]    026A: C3                                    ret
+[ 237]        :                                       endp
+[ 238]        :                                       
+[ 239]        :                                       ;Экран приветствия
+[ 240]    026B:                                       welcomeScreen proc
+[ 241]    026B: 50                                    push ax
+[ 242]    026C: 53                                    push bx
+[ 243]    026D: 52                                    push dx
+[ 244]        :                                       
+[ 245]        :                                       ;Вывод строки
+[ 246]    026E: B4 09                                 mov ah, 9h
+[ 247]    0270: BA 00 00                              mov dx, offset messageWelcome
+[ 248]    0273: CD 21                                 int 21h
+[ 249]        :                                       
+[ 250]    0275:                                       waitEnterWelcome:
+[ 251]        :                                       ;Проверка наличия символов в буфере
+[ 252]    0275: B4 01                                 mov ah, 1
+[ 253]    0277: CD 16                                 int 16h
+[ 254]    0279: 74 FA                                 jz waitEnterWelcome
+[ 255]        :                                       ;Получение символа из буфера
+[ 256]    027B: 32 E4                                 xor ah, ah
+[ 257]    027D: CD 16                                 int 16h
+[ 258]    027F: 80 FC 1C                              cmp ah, 1Ch                         ;Enter
+[ 259]    0282: 74 08                                 je EnterWelcome
+[ 260]    0284: 80 FC 01                              cmp ah, 01h                         ;Esc
+[ 261]    0287: 75 EC                                 jne waitEnterWelcome
+[ 262]        :                                       ;Завершение при нажатии esc
+[ 263]    0289: E9 1B 03                              jmp exit
+[ 264]    028C:                                       EnterWelcome:
+[ 265]    028C: 5A                                    pop dx
+[ 266]    028D: 5B                                    pop bx
+[ 267]    028E: 58                                    pop ax
+[ 268]    028F: C3                                    ret
+[ 269]        :                                       endp
+[ 270]        :                                       
+[ 271]        :                                       ;Передвижение шара
+[ 272]    0290:                                       moveBall proc
+[ 273]    0290: 52                                    push dx
+[ 274]    0291: 83 3E 6C 0A 00                        cmp verticalMovement, 0             ;Напрвление вертикального движения
+[ 275]    0296: 75 0F                                 jne moveDown
+[ 276]    0298: 83 3E 70 0A 00                        cmp ballPositionY, 0                ;Проверка столкновения с верхней границей
+[ 277]    029D: 75 06                                 jne notUpBorder
+[ 278]    029F: C7 06 6C 0A 01 00                     mov verticalMovement, 1             ;Изменить вертикальную скорость
+[ 279]    02A5:                                       notUpBorder:
+[ 280]    02A5: EB 28                                 jmp horizontalCheck                 ;Горизонтальное движение
+[ 281]    02A7:                                       moveDown:
+[ 282]    02A7: 83 3E 70 0A 12                        cmp ballPositionY, 18               ;Проверка столкноыения с нижней границей
+[ 283]    02AC: 75 21                                 jne notDownBorder
+[ 284]    02AE: BB 74 0A                              mov bx, offset paddlePosition
+[ 285]    02B1: 8B 07                                 mov ax, [bx]
+[ 286]    02B3: 3B 06 72 0A                           cmp ax, ballPositionX               ;Промах платформы слева
+[ 287]    02B7: 7F 11                                 jg paddleLose
+[ 288]    02B9: 05 03 00                              add ax, 3
+[ 289]    02BC: 3B 06 72 0A                           cmp ax, ballPositionX
+[ 290]    02C0: 7C 08                                 jl paddleLose                       ;Промах платформы справа
+[ 291]    02C2: C7 06 6C 0A 00 00                     mov verticalMovement, 0             ;Изменить вертикальную скорость
+[ 292]    02C8: EB 05                                 jmp notDownBorder
+[ 293]        :                                       ;Выход - поражение
+[ 294]    02CA:                                       paddleLose:
+[ 295]    02CA: B8 01 00                              mov ax, 01h
+[ 296]    02CD: 5A                                    pop dx
+[ 297]    02CE: C3                                    ret
+[ 298]    02CF:                                       notDownBorder:
+[ 299]    02CF:                                       horizontalCheck:
+[ 300]    02CF: 83 3E 6E 0A 00                        cmp horizontalMovement, 0           ;Направление горизонтального движения
+[ 301]    02D4: 75 0F                                 jne moveLeft
+[ 302]    02D6: 83 3E 72 0A 15                        cmp ballPositionX, 21               ;Проверка столкновения с правой стенкой
+[ 303]    02DB: 75 15                                 jne changeBallPos
+[ 304]    02DD: C7 06 6E 0A 01 00                     mov horizontalMovement, 1           ;Поменять горизонтальную скорость
+[ 305]    02E3: EB 0D                                 jmp changeBallPos
+[ 306]    02E5:                                       moveLefT:
+[ 307]    02E5: 83 3E 72 0A 00                        cmp ballPositionX, 0                ;Проверка столкновения с левой стенкой
+[ 308]    02EA: 75 06                                 jne changeBallPos
+[ 309]    02EC: C7 06 6E 0A 00 00                     mov horizontalMovement, 0           ;Поменять горизонтальную скорость
+[ 310]    02F2:                                       changeBallPos:
+[ 311]    02F2: 83 3E 6E 0A 01                        cmp horizontalMovement, 1           ;Направление горизотального движения
+[ 312]    02F7: 75 18                                 jne moveRight
+[ 313]    02F9: FF 0E 72 0A                           dec ballPositionX                   ;Сдвинуть влево
+[ 314]    02FD: E8 8F 00                              call checkCollision                 ;Проверить столкновение
+[ 315]    0300: 83 FA 00                              cmp dx, 00h                         ;Результат проверки
+[ 316]    0303: 74 22                                 je verticalMove
+[ 317]    0305: FF 06 72 0A                           inc ballPositionX                   ;Сдвинуть вправо
+[ 318]    0309: C7 06 6E 0A 00 00                     mov horizontalMovement, 0           ;Поменять горизонтальную скорость
+[ 319]    030F: EB 16                                 jmp verticalMove
+[ 320]    0311:                                       moveRight:
+[ 321]    0311: FF 06 72 0A                           inc ballPositionX                   ;Сдвинуть вправо
+[ 322]    0315: E8 77 00                              call checkCollision                 ;Проверить столкновение
+[ 323]    0318: 83 FA 00                              cmp dx, 00h                         ;Результат проверки
+[ 324]    031B: 74 0A                                 je verticalMove
+[ 325]    031D: FF 0E 72 0A                           dec ballPositionX                   ;Сдвинуть влево
+[ 326]    0321: C7 06 6E 0A 01 00                     mov horizontalMovement, 1           ;Поменять горизонтальную скорость
+[ 327]    0327:                                       verticalMove:
+[ 328]    0327: 83 3E 6C 0A 01                        cmp verticalMovement, 1
+[ 329]    032C: 75 18                                 jne moveUp
+[ 330]    032E: FF 06 70 0A                           inc ballPositionY                   ;Сдвинуть вниз
+[ 331]    0332: E8 5A 00                              call checkCollision                 ;Проверить столкновение
+[ 332]    0335: 83 FA 00                              cmp dx, 00h                         ;Результат проверки
+[ 333]    0338: 74 22                                 je moveEnd
+[ 334]    033A: FF 0E 70 0A                           dec ballPositionY                   ;Сдвинуть вверх
+[ 335]    033E: C7 06 6C 0A 00 00                     mov verticalMovement, 0             ;Поменять верт скорость
+[ 336]    0344: EB 16                                 jmp moveEnd
+[ 337]    0346:                                       moveUp:
+[ 338]    0346: FF 0E 70 0A                           dec ballPositionY                   ;Сдвинуть вверх
+[ 339]    034A: E8 42 00                              call checkCollision                 ;Проверить столкновение
+[ 340]    034D: 83 FA 00                              cmp dx, 00h                         ;Результат проверки
+[ 341]    0350: 74 0A                                 je moveEnd
+[ 342]    0352: FF 06 70 0A                           inc ballPositionY                   ;Сдвинуть вниз
+[ 343]    0356: C7 06 6C 0A 01 00                     mov verticalMovement, 1             ;Поменять верт скорость
+[ 344]    035C:                                       moveEnd:
+[ 345]    035C: 33 C0                                 xor ax, ax
+[ 346]    035E: 5A                                    pop dx
+[ 347]    035F: C3                                    ret
+[ 348]        :                                       endp
+[ 349]        :                                       
+[ 350]        :                                       ;Отрисовка шара
+[ 351]    0360:                                       displayBall proc
+[ 352]    0360: 50                                    push ax
+[ 353]    0361: 53                                    push bx
+[ 354]    0362: 51                                    push cx
+[ 355]    0363: 1E                                    push ds
+[ 356]    0364: BB 70 0A                              mov bx, offset ballPositionY
+[ 357]    0367: 8B 07                                 mov ax, [bx]
+[ 358]    0369: 05 03 00                              add ax, 3                       ;3 ряда сверху
+[ 359]    036C: B1 50                                 mov cl, 80                      ;40 символов в ряд по 2 байта на каждый
+[ 360]    036E: F6 E1                                 mul cl
+[ 361]    0370: BB 72 0A                              mov bx, offset BallPositionX
+[ 362]    0373: 8B 0F                                 mov cx, [bx]
+[ 363]    0375: 03 C1                                 add ax, cx
+[ 364]    0377: 03 C1                                 add ax, cx                      ;x2 байта на каждый символ
+[ 365]    0379: 05 06 00                              add ax, 6                       ;3 символа по 2 байта
+[ 366]    037C: 8B D8                                 mov bx, ax
+[ 367]    037E: B8 00 B8                              mov ax, 0b800h                  ;Начало видеопамяти
+[ 368]    0381: 8E D8                                 mov ds, ax
+[ 369]    0383: C6 07 6F                              mov [bx], 'o'
+[ 370]    0386: 43                                    inc bx
+[ 371]    0387: C6 07 07                              mov [bx], 07h                   ;Закрашиваем символ
+[ 372]    038A: 1F                                    pop ds
+[ 373]    038B: 59                                    pop cx
+[ 374]    038C: 5B                                    pop bx
+[ 375]    038D: 58                                    pop ax
+[ 376]    038E: C3                                    ret
+[ 377]        :                                       endp
+[ 378]        :                                       
+[ 379]        :                                       ;Возвращает в dx : 0 - столкновения не произошло, 1 - столкновение произошло
+[ 380]    038F:                                       checkCollision proc
+[ 381]    038F: 50                                    push ax
+[ 382]    0390: 53                                    push bx
+[ 383]    0391: 51                                    push cx
+[ 384]    0392: 33 D2                                 xor dx, dx
+[ 385]    0394: BB 70 0A                              mov bx, offset ballPositionY    ;Y координата шара
+[ 386]    0397: 8B 07                                 mov ax, [bx]
+[ 387]    0399: B1 16                                 mov cl, 22                      ;22 символа в одном ряду игрового поля
+[ 388]    039B: F6 E1                                 mul cl
+[ 389]    039D: BB 72 0A                              mov bx, offset ballPositionX    ;+X координата шара
+[ 390]    03A0: 8B 0F                                 mov cx, [bx]
+[ 391]    03A2: 03 C1                                 add ax, cx                      ;Номер клетки в которой находится шар
+[ 392]    03A4: BB 74 00                              mov bx, offset playField
+[ 393]    03A7: 03 D8                                 add bx, ax                      ;Байт атрибута клетки в которой находится шар
+[ 394]    03A9: 80 3F 00                              cmp [bx], 00h
+[ 395]    03AC: 74 1C                                 je notCollision                 ;Клетка пустая - столкновения не произошло
+[ 396]    03AE: 83 06 78 0A 0A                        add score, 10                   ;Увеличение счета
+[ 397]    03B3: E8 4D FD                              call printScore                 ;Вывод счета
+[ 398]    03B6: BA 01 00                              mov dx, 01h                     ;Метка столкновения
+[ 399]        :                                       
+[ 400]        :                                       ;"Разрушение" клетки или изменение цвета
+[ 401]    03B9: 80 3F 50                              cmp [bx], 50h
+[ 402]    03BC: 75 09                                 jne changeColour
+[ 403]    03BE: C6 07 00                              mov [bx], 00h
+[ 404]    03C1: FF 0E 7A 0A                           dec winCount                    ;Уменьшения счета до победы
+[ 405]    03C5: EB 03                                 jmp notCollision
+[ 406]        :                                       
+[ 407]        :                                       ;Изменение цвета клетки
+[ 408]    03C7:                                       changeColour:
+[ 409]    03C7: 80 07 10                              add [bx], 10h
+[ 410]        :                                       
+[ 411]    03CA:                                       notCollision:
+[ 412]    03CA: 59                                    pop cx
+[ 413]    03CB: 5B                                    pop bx
+[ 414]    03CC: 58                                    pop ax
+[ 415]    03CD: C3                                    ret
+[ 416]        :                                       endp
+[ 417]        :                                       
+[ 418]        :                                       ;Движение платформы перед стартом
+[ 419]    03CE:                                       paddleStart proc
+[ 420]    03CE: BB 74 0A                              mov bx, offset paddlePosition
+[ 421]    03D1: 8B 07                                 mov ax, [bx]
+[ 422]    03D3: 05 02 00                              add ax, 2
+[ 423]    03D6: A3 72 0A                              mov ballPositionX, ax           ;X координата шара - 3 клетка платформы
+[ 424]    03D9: E8 84 FF                              call displayBall                ;Отрисовка шара
+[ 425]    03DC: E8 5F FE                              call displayPaddle              ;Отрисовка платформы
+[ 426]    03DF:                                       paddleLoop:
+[ 427]        :                                       ;Проверка буфера клавиатуры
+[ 428]    03DF: B4 01                                 mov ah, 1
+[ 429]    03E1: CD 16                                 int 16h
+[ 430]    03E3: 74 FA                                 jz paddleLoop
+[ 431]        :                                       ;Получение значения из буфера
+[ 432]    03E5: 32 E4                                 xor ah, ah
+[ 433]    03E7: CD 16                                 int 16h
+[ 434]        :                                       
+[ 435]    03E9: 80 FC 4D                              cmp ah, 4Dh                     ;Стрелка вправо
+[ 436]    03EC: 74 11                                 je paddleRight
+[ 437]    03EE: 80 FC 4B                              cmp ah, 4Bh                     ;Стрелка влево
+[ 438]    03F1: 74 26                                 je paddleLeft
+[ 439]    03F3: 80 FC 01                              cmp ah, 01h                     ;Esc
+[ 440]    03F6: 74 3B                                 je paddleEsc
+[ 441]    03F8: 80 FC 1C                              cmp ah, 1Ch                     ;Enter
+[ 442]    03FB: 74 39                                 je paddleEnter
+[ 443]    03FD: EB E0                                 jmp paddleLoop
+[ 444]        :                                       
+[ 445]    03FF:                                       paddleRight:
+[ 446]    03FF: 83 3E 74 0A 12                        cmp paddlePosition, 18          ;Правая граница
+[ 447]    0404: 7D D9                                 jge paddleLoop
+[ 448]    0406: FF 06 74 0A                           inc paddlePosition              ;Сдвинуть платформу вправо
+[ 449]    040A: FF 06 72 0A                           inc ballPositionX               ;Сдвинуть шар вправо
+[ 450]    040E: E8 06 FE                              call displayPlayField           ;Отрисовать игровое поле
+[ 451]    0411: E8 2A FE                              call displayPaddle              ;Отрисовать платформу
+[ 452]    0414: E8 49 FF                              call displayBall                ;Отрисовать шар
+[ 453]    0417: EB C6                                 jmp paddleLoop
+[ 454]        :                                       
+[ 455]    0419:                                       paddleLeft:
+[ 456]    0419: 83 3E 74 0A 00                        cmp paddlePosition, 0           ;Левая граница
+[ 457]    041E: 74 BF                                 je paddleLoop
+[ 458]    0420: FF 0E 74 0A                           dec paddlePosition              ;Сдвинуть платформу влево
+[ 459]    0424: FF 0E 72 0A                           dec ballPositionX               ;Сдвинуть шар влево
+[ 460]    0428: E8 EC FD                              call displayPlayField           ;Отрисовать игровое поле
+[ 461]    042B: E8 10 FE                              call displayPaddle              ;Отрисовать платформу
+[ 462]    042E: E8 2F FF                              call displayBall                ;Отрисовать шар
+[ 463]    0431: EB AC                                 jmp paddleLoop
+[ 464]        :                                       
+[ 465]    0433:                                       paddleEsc:
+[ 466]    0433: E9 71 01                              jmp exit                        ;Выход
+[ 467]        :                                       
+[ 468]    0436:                                       paddleEnter:
+[ 469]    0436: C3                                    ret                             ;Старт игры
+[ 470]        :                                       endp
+[ 471]        :                                       
+[ 472]        :                                       printScreen MACRO Screen
+[ 473]        :                                       pusha
+[ 474]        :                                       
+[ 475]        :                                       LOCAL printScrLoop
+[ 476]        :                                       LOCAL waitEnterScr
+[ 477]        :                                       LOCAL EnterScr
+[ 478]        :                                       
+[ 479]        :                                       ;Очистка экрана
+[ 480]        :                                       mov ah, 00
+[ 481]        :                                       mov al, 01
+[ 482]        :                                       int 10h
+[ 483]        :                                       
+[ 484]        :                                       mov ax, 0B800h                  ;Видеопамять
+[ 485]        :                                       mov es, ax
+[ 486]        :                                       mov cx, 880
+[ 487]        :                                       mov di, 1                       ;Байт атрибута первого символа
+[ 488]        :                                       mov si, offset Screen
+[ 489]        :                                       
+[ 490]        :                                       printScrLoop:
+[ 491]        :                                       
+[ 492]        :                                       movsb                       ;Копирование si -> di
+[ 493]        :                                       inc di                      ;Пропуск бита кода символа
+[ 494]        :                                       
+[ 495]        :                                       loop printScrLoop
+[ 496]        :                                       
+[ 497]        :                                       ;Курсор на предпоследнюю строку
+[ 498]        :                                       mov ah, 02h
+[ 499]        :                                       mov bh, 0
+[ 500]        :                                       mov dh, 23
+[ 501]        :                                       mov dl, 0
+[ 502]        :                                       int 10h
+[ 503]        :                                       
+[ 504]        :                                       ;Вывод сообщения на экран
+[ 505]        :                                       mov ah, 9h
+[ 506]        :                                       mov dx, offset message
+[ 507]        :                                       int 21h
+[ 508]        :                                       
+[ 509]        :                                       ;Спрятать курсор
+[ 510]        :                                       mov ah, 02h
+[ 511]        :                                       mov bh, 0
+[ 512]        :                                       mov dh, 25
+[ 513]        :                                       int 10h
+[ 514]        :                                       
+[ 515]        :                                       waitEnterScr:
+[ 516]        :                                       ;Проверка буфера клавиатуры
+[ 517]        :                                       mov ah, 1
+[ 518]        :                                       int 16h
+[ 519]        :                                       jz waitEnterScr
+[ 520]        :                                       ;Получение значения из буфера
+[ 521]        :                                       xor ah, ah
+[ 522]        :                                       int 16h
+[ 523]        :                                       
+[ 524]        :                                       cmp ah, 1Ch                     ;Enter
+[ 525]        :                                       je EnterScr
+[ 526]        :                                       
+[ 527]        :                                       cmp ah, 01h                     ;Esc
+[ 528]        :                                       jne waitEnterScr
+[ 529]        :                                       jmp exit
+[ 530]        :                                       
+[ 531]        :                                       EnterScr:
+[ 532]        :                                       
+[ 533]        :                                       popa
+[ 534]        :                                       printScreen ENDM
+[ 535]        :                                       
+[ 536]    0437:                                       main:
+[ 537]    0437: B8 5C 00                              mov ax, @data
+[ 538]    043A: 8E D8                                 mov ds, ax
+[ 539]    043C: B4 00                                 mov ah, 00                      ;Установка видеорежима
+[ 540]    043E: B0 01                                 mov al, 01                      ;40x25 16-цветный режим с очисткой экрана
+[ 541]    0440: CD 10                                 int 10h
+[ 542]    0442: E8 26 FE                              call welcomeScreen
+[ 543]        :                                       
+[ 544]    0445:                                       restart:
+[ 545]        :                                       ;Стартовые значения величин
+[ 546]    0445: C7 06 7A 0A 1E 00                     mov winCount, 30                ;220 клеток всего
+[ 547]    044B: C7 06 78 0A 00 00                     mov score, 0
+[ 548]    0451: C7 06 76 0A 00 00                     mov previousTime, 0
+[ 549]    0457: C7 06 70 0A 12 00                     mov ballPositionY, 18
+[ 550]    045D: C7 06 6E 0A 00 00                     mov horizontalMovement, 0
+[ 551]    0463: C7 06 6C 0A 00 00                     mov verticalMovement, 0
+[ 552]        :                                       
+[ 553]    0469: E8 C6 FC                              call setScreen                  ;Очистка экрана и установка границ
+[ 554]    046C: E8 94 FC                              call printScore                 ;Посимвольный вывод счета
+[ 555]    046F: E8 89 FD                              call initPlayField              ;Выбор уровня и установка необходимого кол-ва очков
+[ 556]    0472: E8 A2 FD                              call displayPlayField           ;Вывод уровня на экран
+[ 557]    0475: E8 C6 FD                              call displayPaddle              ;Вывод платформы на экран
+[ 558]    0478: E8 53 FF                              call paddleStart                ;Выбор стартовой точки
+[ 559]        :                                       
+[ 560]        :                                       ;Обнуление счетчика времени
+[ 561]    047B: B4 01                                 mov ah, 01h
+[ 562]    047D: 33 C9                                 xor cx, cx
+[ 563]    047F: 33 D2                                 xor dx, dx
+[ 564]    0481: CD 1A                                 int 1ah
+[ 565]        :                                       
+[ 566]    0483:                                       start:
+[ 567]        :                                       ;Проверка символа в буфере
+[ 568]    0483: B4 01                                 mov ah, 1
+[ 569]    0485: CD 16                                 int 16h
+[ 570]    0487: 74 44                                 jz checkTime
+[ 571]        :                                       ;Чтение символа из буфера
+[ 572]    0489: 32 E4                                 xor ah, ah
+[ 573]    048B: CD 16                                 int 16h
+[ 574]        :                                       
+[ 575]        :                                       
+[ 576]    048D: 80 FC 4D                              cmp ah, 4Dh                     ;Стрелка вправо
+[ 577]    0490: 74 0C                                 je Right
+[ 578]    0492: 80 FC 4B                              cmp ah, 4Bh                     ;Стрелка влево
+[ 579]    0495: 74 1D                                 je Left
+[ 580]    0497: 80 FC 01                              cmp ah, 01h                     ;Esc
+[ 581]    049A: 74 2E                                 je Esc
+[ 582]    049C: EB 2F                                 jmp checkTime                   ;Ни один из перечисл.
+[ 583]        :                                       
+[ 584]    049E:                                       Right:
+[ 585]    049E: 83 3E 74 0A 12                        cmp paddlePosition, 18          ;Правая граница
+[ 586]    04A3: 74 28                                 je checkTime
+[ 587]    04A5: FF 06 74 0A                           inc paddlePosition              ;Сдвиг платформы вправо
+[ 588]    04A9: E8 6B FD                              call displayPlayField           ;Отрисовка игрового поля
+[ 589]    04AC: E8 8F FD                              call displayPaddle              ;Отрисовка платформы
+[ 590]    04AF: E8 AE FE                              call displayBall                ;Отрисовка шара
+[ 591]    04B2: EB 19                                 jmp checkTime
+[ 592]        :                                       
+[ 593]    04B4:                                       Left:
+[ 594]    04B4: 83 3E 74 0A 00                        cmp paddlePosition, 0           ;Левая граница
+[ 595]    04B9: 74 12                                 je checkTime
+[ 596]    04BB: FF 0E 74 0A                           dec paddlePosition              ;Сдвиг платформы влево
+[ 597]    04BF: E8 55 FD                              call displayPlayField           ;Отрисовка игрового поля
+[ 598]    04C2: E8 79 FD                              call displayPaddle              ;Отрисовка платформы
+[ 599]    04C5: E8 98 FE                              call displayBall                ;Отрисовка шара
+[ 600]    04C8: EB 03                                 jmp checkTime
+[ 601]        :                                       
+[ 602]    04CA:                                       Esc:
+[ 603]    04CA: E9 DA 00                              jmp exit
+[ 604]        :                                       
+[ 605]    04CD:                                       checkTime:
+[ 606]        :                                       ;Прочитать счетчик времени
+[ 607]    04CD: B4 00                                 mov ah, 00h
+[ 608]    04CF: CD 1A                                 int 1ah
+[ 609]    04D1: 52                                    push dx
+[ 610]        :                                       
+[ 611]    04D2: A1 76 0A                              mov ax, previousTime            ;Предыдущее значение счетчика
+[ 612]    04D5: 2B D0                                 sub dx, ax
+[ 613]    04D7: 8B C2                                 mov ax, dx                      ;Прошедшее время
+[ 614]    04D9: 5A                                    pop dx
+[ 615]    04DA: 3D 03 00                              cmp ax, 3
+[ 616]    04DD: 7C 15                                 jl checkCount                   ;если прошло недостаточно  - не менять кадр
+[ 617]    04DF: 89 16 76 0A                           mov previousTime, dx            ;Сохранение значения счетчика
+[ 618]    04E3: E8 AA FD                              call moveBall                   ;Сдвиг мяча
+[ 619]        :                                       
+[ 620]        :                                       ;Проверка непопадания в платформу
+[ 621]    04E6: 3D 01 00                              cmp ax, 01h
+[ 622]    04E9: 74 6B                                 je Lose
+[ 623]        :                                       
+[ 624]    04EB: E8 29 FD                              call displayPlayField           ;Отрисовка игрового поля
+[ 625]    04EE: E8 4D FD                              call displayPaddle              ;Отрисовка платформы
+[ 626]    04F1: E8 6C FE                              call displayBall                ;Отрисовка шара
+[ 627]        :                                       
+[ 628]    04F4:                                       checkCount:
+[ 629]    04F4: 83 3E 7A 0A 00                        cmp winCount, 0
+[ 630]    04F9: 7F 88                                 jg start
+[ 631]    04FB: 60 B4 00 B0 01 CD 10 B8 00 B8 8E C0   printScreen winScreen
+                B9 70 03 BF 01 00 BE 8C 03 A4 47 E2 
+                FC B4 02 B7 00 B6 17 B2 00 CD 10 B4 
+                09 BA 50 00 CD 21 B4 02 B7 00 B6 19 
+                CD 10 B4 01 CD 16 74 FA 32 E4 CD 16 
+                80 FC 1C 74 07 80 FC 01 75 EC EB 64 
+                61                                  
+[ 632]    0544: E9 FE FE                              jmp restart
+[ 633]        :                                       
+[ 634]        :                                       
+[ 635]    0547:                                       waitEnter:
+[ 636]        :                                       ;Проверка буфера клавиатуры
+[ 637]    0547: B4 01                                 mov ah, 1
+[ 638]    0549: CD 16                                 int 16h
+[ 639]    054B: 74 FA                                 jz waitEnter
+[ 640]        :                                       ;Чтение из буфера клавиатуры
+[ 641]    054D: 32 E4                                 xor ah, ah
+[ 642]    054F: CD 16                                 int 16h
+[ 643]    0551: 80 FC 1C                              cmp ah, 1Ch                     ;Enter
+[ 644]    0554: 75 4C                                 jne notEnter
+[ 645]        :                                       
+[ 646]    0556:                                       Lose:
+[ 647]    0556: 60 B4 00 B0 01 CD 10 B8 00 B8 8E C0   printScreen loseScreen
+                B9 70 03 BF 01 00 BE FC 06 A4 47 E2 
+                FC B4 02 B7 00 B6 17 B2 00 CD 10 B4 
+                09 BA 50 00 CD 21 B4 02 B7 00 B6 19 
+                CD 10 B4 01 CD 16 74 FA 32 E4 CD 16 
+                80 FC 1C 74 07 80 FC 01 75 EC EB 09 
+                61                                  
+[ 648]        :                                       
+[ 649]    059F: E9 A3 FE                              jmp restart
+[ 650]        :                                       
+[ 651]    05A2:                                       notEnter:
+[ 652]    05A2: 80 FC 01                              cmp ah, 01                      ;Esc
+[ 653]    05A5: 75 A0                                 jne waitEnter
+[ 654]        :                                       
+[ 655]    05A7:                                       exit:
+[ 656]        :                                       ;Переключение видеорежима
+[ 657]    05A7: B4 00                                 mov ah, 00
+[ 658]    05A9: B0 03                                 mov al, 03
+[ 659]    05AB: CD 10                                 int 10h
+[ 660]        :                                       ;Завершение работы
+[ 661]    05AD: B4 4C                                 mov ah, 4Ch
+[ 662]    05AF: CD 21                                 int 21h
+[ 663]        :                                       
+[ 664]        :                                       .data
+[ 665]    05C0: 0A 0A 0A 0A 0A 0A 0A                  messageWelcome db 0Ah, 0Ah, 0Ah, 0Ah, 0Ah, 0Ah, 0Ah
+[ 666]    05C7: 09 20 20 20 4D 6F 76 65 6D 65 6E 74   db 09h, "   Movement:",0Dh ,0Ah
+                3A 0D 0A                            
+[ 667]    05D6: 09 20 20 20 4C 65 66 74 2F 52 69 67   db 09h, "   Left/Right arrow",0Dh ,0Ah
+                68 74 20 61 72 72 6F 77 0D 0A       
+[ 668]    05EC: 09 20 20 20 45 73 63 20 2D 20 65 78   db 09h, "   Esc - exit",0Dh ,0Ah
+                69 74 0D 0A                         
+[ 669]    05FC: 09 20 20 20 45 6E 74 65 72 20 2D 20   db 09h, "   Enter - start",0Dh ,0Ah,'$'
+                73 74 61 72 74 0D 0A 24             
+[ 670]        :                                       
+[ 671]    0610: 20 20 20 20 20 45 73 63 20 2D 20 65   message db "     Esc - exit     Enter - restart",'$'
+                78 69 74 20 20 20 20 20 45 6E 74 65 
+                72 20 2D 20 72 65 73 74 61 72 74 24 
+                                                    
+[ 672]        :                                       
+[ 673]        :                                       ;Длина игрового поля 22 бита, ширина 18
+[ 674]    0634: 00 00 00 00 00 00 00 00 00 00 00 00   playField db 396 dup(00h)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                                                    
+[ 675]    07C0: 00 00 00 00 00 00 00 00 00 00 00 00   level db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 676]    07D6: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 677]    07EC: 50 50 50 50 50 50 50 50 50 50 50 50   db 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h
+                50 50 50 50 50 50 50 50 50 50       
+[ 678]    0802: 50 50 50 50 20 20 20 50 50 50 50 50   db 50h, 50h, 50h, 50h, 20h, 20h, 20h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h
+                50 50 50 50 50 50 50 50 50 50       
+[ 679]    0818: 50 50 50 20 50 50 50 20 50 50 50 50   db 50h, 50h, 50h, 20h, 50h, 50h, 50h, 20h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h
+                50 50 50 50 50 50 50 50 50 50       
+[ 680]    082E: 50 50 50 20 50 50 50 20 50 50 30 30   db 50h, 50h, 50h, 20h, 50h, 50h, 50h, 20h, 50h, 50h, 30h, 30h, 30h, 50h, 40h, 50h, 50h, 50h, 40h, 50h, 50h, 50h
+                30 50 40 50 50 50 40 50 50 50       
+[ 681]    0844: 50 50 50 20 20 20 20 20 50 30 50 50   db 50h, 50h, 50h, 20h, 20h, 20h, 20h, 20h, 50h, 30h, 50h, 50h, 50h, 50h, 40h, 40h, 50h, 40h, 40h, 50h, 50h, 50h
+                50 50 40 40 50 40 40 50 50 50       
+[ 682]    085A: 50 50 50 20 50 50 50 20 50 50 30 30   db 50h, 50h, 50h, 20h, 50h, 50h, 50h, 20h, 50h, 50h, 30h, 30h, 50h, 50h, 40h, 50h, 40h, 50h, 40h, 50h, 50h, 50h
+                50 50 40 50 40 50 40 50 50 50       
+[ 683]    0870: 50 50 50 20 50 50 50 20 50 50 50 50   db 50h, 50h, 50h, 20h, 50h, 50h, 50h, 20h, 50h, 50h, 50h, 50h, 30h, 50h, 40h, 50h, 50h, 50h, 40h, 50h, 50h, 50h
+                30 50 40 50 50 50 40 50 50 50       
+[ 684]    0886: 50 50 50 20 50 50 50 20 50 30 30 30   db 50h, 50h, 50h, 20h, 50h, 50h, 50h, 20h, 50h, 30h, 30h, 30h, 50h, 50h, 40h, 50h, 50h, 50h, 40h, 50h, 50h, 50h
+                50 50 40 50 50 50 40 50 50 50       
+[ 685]    089C: 50 50 50 50 50 50 50 50 50 50 50 50   db 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h
+                50 50 50 50 50 50 50 50 50 50       
+[ 686]    08B2: 50 50 50 50 50 50 50 50 50 50 50 50   db 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h, 50h
+                50 50 50 50 50 50 50 50 50 50       
+[ 687]    08C8: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 688]    08DE: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 689]    08F4: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 690]    090A: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 691]    0920: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 692]    0936: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00 00 00       
+[ 693]        :                                       
+[ 694]    094C: 00 00 00 00 00 00 00 00 00 00 00 00   winScreen db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 695]    0960: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 696]    0974: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 00h, 20h, 20h
+                20 00 20 00 00 00 20 20             
+[ 697]    0988: 00 00 00 20 00 00 20 00 00 00 00 00   	      db 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 698]    099C: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h
+                20 00 20 00 00 20 00 00             
+[ 699]    09B0: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 700]    09C4: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h
+                20 00 20 00 00 20 00 00             
+[ 701]    09D8: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 702]    09EC: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h
+                20 00 20 00 00 20 00 00             
+[ 703]    0A00: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 704]    0A14: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h
+                20 00 20 00 00 20 00 00             
+[ 705]    0A28: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 706]    0A3C: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h
+                00 20 00 00 00 20 00 00             
+[ 707]    0A50: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 708]    0A64: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h
+                00 20 00 00 00 20 00 00             
+[ 709]    0A78: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 710]    0A8C: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h
+                00 20 00 00 00 20 00 00             
+[ 711]    0AA0: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 712]    0AB4: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h
+                00 20 00 00 00 20 00 00             
+[ 713]    0AC8: 20 00 00 20 00 00 20 00 00 00 00 00   	      db 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 714]    0ADC: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 20h, 20h
+                00 20 00 00 00 00 20 20             
+[ 715]    0AF0: 00 00 00 20 20 20 20 00 00 00 00 00   	      db 00h, 00h, 00h, 20h, 20h, 20h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 716]    0B04: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 717]    0B18: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 718]    0B2C: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 719]    0B40: 00 00 00 00 00 00 00 00 00 00 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 720]    0B54: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 20h, 00h
+                00 20 00 00 00 20 20 00             
+[ 721]    0B68: 00 00 20 00 00 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 722]    0B7C: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 723]    0B90: 00 00 20 20 00 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 724]    0BA4: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 725]    0BB8: 00 00 20 20 00 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 20h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 726]    0BCC: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 727]    0BE0: 00 00 20 00 20 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 728]    0BF4: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 729]    0C08: 00 00 20 00 20 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 730]    0C1C: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 731]    0C30: 00 00 20 00 00 20 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 00h, 20h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 732]    0C44: 00 00 00 00 00 00 00 00 00 20 00 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 733]    0C58: 00 00 20 00 00 20 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 00h, 20h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 734]    0C6C: 00 00 00 00 00 00 00 00 00 20 00 20   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 20h
+                00 20 00 00 20 00 00 20             
+[ 735]    0C80: 00 00 20 00 00 00 20 00 00 00 00 00   	      db 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 736]    0C94: 00 00 00 00 00 00 00 00 00 00 20 00   	      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 00h, 20h, 00h, 00h, 00h, 00h, 20h, 20h, 00h
+                20 00 00 00 00 20 20 00             
+[ 737]    0CA8: 00 00 20 00 00 00 20 00 00 20 00 00   	      db 00h, 00h, 20h, 00h, 00h, 00h, 20h, 00h, 00h, 20h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 738]        :                                       
+[ 739]        :                                       
+[ 740]    0CBC: 00 00 00 00 00 00 00 00 00 00 00 00   loseScreen db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 741]    0CD0: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 742]    0CE4: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 40h, 00h, 00h, 00h, 40h, 40h
+                40 00 40 00 00 00 40 40             
+[ 743]    0CF8: 00 00 00 40 00 00 40 00 00 00 00 00   	       db 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 744]    0D0C: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 40h, 00h, 00h, 40h, 00h, 00h
+                40 00 40 00 00 40 00 00             
+[ 745]    0D20: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 746]    0D34: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 40h, 00h, 00h, 40h, 00h, 00h
+                40 00 40 00 00 40 00 00             
+[ 747]    0D48: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 748]    0D5C: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 40h, 00h, 00h, 40h, 00h, 00h
+                40 00 40 00 00 40 00 00             
+[ 749]    0D70: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 750]    0D84: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 40h, 00h, 00h, 40h, 00h, 00h
+                40 00 40 00 00 40 00 00             
+[ 751]    0D98: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 752]    0DAC: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h
+                00 40 00 00 00 40 00 00             
+[ 753]    0DC0: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 754]    0DD4: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h
+                00 40 00 00 00 40 00 00             
+[ 755]    0DE8: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 756]    0DFC: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h
+                00 40 00 00 00 40 00 00             
+[ 757]    0E10: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 758]    0E24: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h
+                00 40 00 00 00 40 00 00             
+[ 759]    0E38: 40 00 00 40 00 00 40 00 00 00 00 00   	       db 40h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 760]    0E4C: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 40h
+                00 40 00 00 00 00 40 40             
+[ 761]    0E60: 00 00 00 40 40 40 40 00 00 00 00 00   	       db 00h, 00h, 00h, 40h, 40h, 40h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 762]    0E74: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 763]    0E88: 00 00 00 00 00 00 00 00 00 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 764]    0E9C: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 40h, 40h, 00h, 00h, 00h, 40h
+                00 00 40 40 00 00 00 40             
+[ 765]    0EB0: 40 40 40 00 40 40 40 40 40 00 00 40   db 40h, 40h, 40h, 00h, 40h, 40h, 40h, 40h, 40h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 766]    0EC4: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 40h
+                00 40 00 00 40 00 00 40             
+[ 767]    0ED8: 00 00 00 00 00 00 40 00 00 00 00 40   db 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 768]    0EEC: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 40h
+                00 40 00 00 40 00 00 40             
+[ 769]    0F00: 00 00 00 00 00 00 40 00 00 00 00 40   db 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 770]    0F14: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h
+                00 40 00 00 40 00 00 00             
+[ 771]    0F28: 40 00 00 00 00 00 40 00 00 00 00 40   db 40h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 772]    0F3C: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h
+                00 40 00 00 40 00 00 00             
+[ 773]    0F50: 40 40 00 00 00 00 40 00 00 00 00 40   db 40h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 774]    0F64: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h
+                00 40 00 00 40 00 00 00             
+[ 775]    0F78: 00 40 00 00 00 00 40 00 00 00 00 40   db 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 776]    0F8C: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h
+                00 40 00 00 40 00 00 00             
+[ 777]    0FA0: 00 00 40 00 00 00 40 00 00 00 00 40   db 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 778]    0FB4: 00 00 00 00 00 00 00 00 40 00 00 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 40h, 00h, 00h, 00h
+                00 40 00 00 40 00 00 00             
+[ 779]    0FC8: 00 00 40 00 00 00 40 00 00 00 00 00   db 00h, 00h, 40h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 780]    0FDC: 00 00 00 00 00 00 00 00 40 40 40 00   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 40h, 40h, 40h, 00h, 00h, 00h, 40h, 40h, 00h, 00h, 00h, 40h
+                00 00 40 40 00 00 00 40             
+[ 781]    0FF0: 40 40 40 00 00 00 40 00 00 00 00 40   db 40h, 40h, 40h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 40h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 782]    1004: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 783]    1018: 00 00 00 00 00 00 00 00 00 00 00 00   	       db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                00 00 00 00 00 00 00 00             
+[ 784]        :                                       	
+[ 785]    102C: 00 00                                 verticalMovement dw 0       ;0 - вверх, 1 - вниз
+[ 786]    102E: 00 00                                 horizontalMovement dw 0     ;0 - право, 1 - лево
+[ 787]        :                                       
+[ 788]        :                                       
+[ 789]        :                                       ; 0;0 - верхний левый угол поля, ограниченного стенками
+[ 790]    1030: 12 00                                 ballPositionY dw 18
+[ 791]    1032: 0B 00                                 ballPositionX dw 11
+[ 792]        :                                       
+[ 793]    1034: 00 00                                 paddlePosition dw 0
+[ 794]    1036: 00 00                                 previousTime dw 0
+[ 795]    1038: 00 00                                 score dw 0
+[ 796]    103A: 00 00                                 winCount dw 0
+[ 797]        :                                       
+[ 798]        :                                       end main
+[ 799]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 3C      -   bytes on last page (l.byte)
+0003: 00      -   bytes on last page (h.byte)
+0004: 0A      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 2D      -   check sum (l.byte)
+0013: 43      -   check sum (h.byte)
+0014: 37      -   IP - instruction pointer (l.byte)
+0015: 03      -   IP - instruction pointer (h.byte)
+0016: 10      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 38      -   relocation table - offset inside segment (l.byte)
+001F: 03      -   relocation table - offset inside segment (h.byte)
+0020: 10      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================
