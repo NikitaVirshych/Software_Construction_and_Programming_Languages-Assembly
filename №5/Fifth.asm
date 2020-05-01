@@ -4,7 +4,7 @@
 .code
 jmp main 
 
-;Чтение readLen символов из file в buf
+;Р§С‚РµРЅРёРµ readLen СЃРёРјРІРѕР»РѕРІ РёР· file РІ buf
 readFile MACRO file, buf  
     mov bx, file 
     mov cx, readLEN 
@@ -13,7 +13,7 @@ readFile MACRO file, buf
     int 21h    
 ENDM     
  
-;Сброс указателя чтения
+;РЎР±СЂРѕСЃ СѓРєР°Р·Р°С‚РµР»СЏ С‡С‚РµРЅРёСЏ
 resetFile MACRO file  
     xor cx, cx
     xor dx, dx 
@@ -23,7 +23,7 @@ resetFile MACRO file
     int 21h      
 ENDM        
  
-;Получение размера файла 
+;РџРѕР»СѓС‡РµРЅРёРµ СЂР°Р·РјРµСЂР° С„Р°Р№Р»Р° 
 getSize MACRO file  
     xor cx, cx
     xor dx, dx 
@@ -33,14 +33,14 @@ getSize MACRO file
     int 21h      
 ENDM  
 
-;Закрытие файла
+;Р—Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
 closeFile MACRO file  
     mov bx, file 
     mov ah, 3Eh
     int 21h      
 ENDM
 
-;Вывод строки на экран
+;Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё РЅР° СЌРєСЂР°РЅ
 outputString MACRO string
     push ax
     mov dx, offset string
@@ -49,7 +49,7 @@ outputString MACRO string
     pop ax
 ENDM 
 
-;Пропуск пробелов в строке str
+;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ РІ СЃС‚СЂРѕРєРµ str
 skipSpaces MACRO str  
     LOCAL skip
     sub str, 1
@@ -59,7 +59,7 @@ skipSpaces MACRO str
     je skip
 ENDM
 
-;Копирование из si в string до пробела или конца командной строки
+;РљРѕРїРёСЂРѕРІР°РЅРёРµ РёР· si РІ string РґРѕ РїСЂРѕР±РµР»Р° РёР»Рё РєРѕРЅС†Р° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 copyWord MACRO string
     LOCAL copy
     mov di, offset string
@@ -67,7 +67,7 @@ copyWord MACRO string
     copy:
     movsb
     
-    cmp [si], 0Dh           ;Признак конца командной строки
+    cmp [si], 0Dh           ;РџСЂРёР·РЅР°Рє РєРѕРЅС†Р° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
     je cmdEnd
     
     cmp [si], ' '
@@ -75,26 +75,26 @@ copyWord MACRO string
        
 ENDM 
 
-;Получение двух слов из командной строки
+;РџРѕР»СѓС‡РµРЅРёРµ РґРІСѓС… СЃР»РѕРІ РёР· РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 getFileNames proc
     pusha
 		
-	mov si, 82h             ;Начало командной строки
+	mov si, 82h             ;РќР°С‡Р°Р»Рѕ РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 	
-    skipSpaces si           ;Пропуск пробелов
+    skipSpaces si           ;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ
 	
-	copyWord firstFileName      ;Считывание первого слова
+	copyWord firstFileName      ;РЎС‡РёС‚С‹РІР°РЅРёРµ РїРµСЂРІРѕРіРѕ СЃР»РѕРІР°
 	
-	skipSpaces si           ;Пропуск пробелов
+	skipSpaces si           ;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ
 	
-	copyWord secondFileName      ;Считывание второго слова
+	copyWord secondFileName      ;РЎС‡РёС‚С‹РІР°РЅРёРµ РІС‚РѕСЂРѕРіРѕ СЃР»РѕРІР°
 	
 	cmdEnd:	    
     popa
     ret
 endp
 
-;Сброс указателей чтения обоих файлов
+;РЎР±СЂРѕСЃ СѓРєР°Р·Р°С‚РµР»РµР№ С‡С‚РµРЅРёСЏ РѕР±РѕРёС… С„Р°Р№Р»РѕРІ
 resetFiles proc
     pusha    
     resetFile firstFile 
@@ -103,7 +103,7 @@ resetFiles proc
     ret
 endp
  
-;Открыть файл в режиме только чтение 
+;РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РІ СЂРµР¶РёРјРµ С‚РѕР»СЊРєРѕ С‡С‚РµРЅРёРµ 
 openFileR proc 
     xor cx, cx 
     xor al, al
@@ -114,27 +114,27 @@ openFileR proc
     ret    
 endp  
 
-;Сравнение файлов по размерам
+;РЎСЂР°РІРЅРµРЅРёРµ С„Р°Р№Р»РѕРІ РїРѕ СЂР°Р·РјРµСЂР°Рј
 cmpSize proc 
     pusha
     
-    getSize firstFile       ;Получить размер первого файла
+    getSize firstFile       ;РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РїРµСЂРІРѕРіРѕ С„Р°Р№Р»Р°
     
-    ;Сохранить значения в стек
+    ;РЎРѕС…СЂР°РЅРёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РІ СЃС‚РµРє
     push ax
     push dx 
     
-    getSize secondFile      ;Получить размер второго файла
+    getSize secondFile      ;РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РІС‚РѕСЂРѕРіРѕ С„Р°Р№Р»Р°
     
-    ;Переместить значения в другую пару регистров
+    ;РџРµСЂРµРјРµСЃС‚РёС‚СЊ Р·РЅР°С‡РµРЅРёСЏ РІ РґСЂСѓРіСѓСЋ РїР°СЂСѓ СЂРµРіРёСЃС‚СЂРѕРІ
     mov cx, ax
     mov bx, dx 
     
-    ;Вернуть размер первого файла
+    ;Р’РµСЂРЅСѓС‚СЊ СЂР°Р·РјРµСЂ РїРµСЂРІРѕРіРѕ С„Р°Р№Р»Р°
     pop dx
     pop ax
     
-    ;Сравнить размер 1 и 2 файла
+    ;РЎСЂР°РІРЅРёС‚СЊ СЂР°Р·РјРµСЂ 1 Рё 2 С„Р°Р№Р»Р°
     cmp ax, cx
     jne sizeNotEqual 
     cmp bx, dx
@@ -148,24 +148,24 @@ cmpSize proc
     jmp sizeExit
 endp 
  
-;Сравнение фалов по содержимому 
+;РЎСЂР°РІРЅРµРЅРёРµ С„Р°Р»РѕРІ РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ 
 cmpFiles proc 
     
     call resetFiles 
     
     comparing:
         
-        readFile firstFile, buf1    ;Прочитать символ из 1 файла
+        readFile firstFile, buf1    ;РџСЂРѕС‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР» РёР· 1 С„Р°Р№Р»Р°
         jc failedReading
-        ;Прочитано 0 символов - конец файла
+        ;РџСЂРѕС‡РёС‚Р°РЅРѕ 0 СЃРёРјРІРѕР»РѕРІ - РєРѕРЅРµС† С„Р°Р№Р»Р°
         cmp ax, 0
         je eof            
         
        
-        readFile secondFile, buf2   ;Прочитать символ из 2 файла
+        readFile secondFile, buf2   ;РџСЂРѕС‡РёС‚Р°С‚СЊ СЃРёРјРІРѕР» РёР· 2 С„Р°Р№Р»Р°
         jc failedReading
     
-    ;Сравнение символов    
+    ;РЎСЂР°РІРЅРµРЅРёРµ СЃРёРјРІРѕР»РѕРІ    
     mov bl, buf1
     cmp bl, buf2
     je comparing
@@ -176,13 +176,13 @@ cmpFiles proc
     ret
 endp   
 
-;Проверка считывания 2 имён файлов из командной строки
+;РџСЂРѕРІРµСЂРєР° СЃС‡РёС‚С‹РІР°РЅРёСЏ 2 РёРјС‘РЅ С„Р°Р№Р»РѕРІ РёР· РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 checkNames proc    
     
-    cmp [1Filename], 0
+    cmp [firstFilename], 0
     je namesNotFound
     
-    cmp [2Filename], 0
+    cmp [secondFilename], 0
     je namesNotFound
     
     ret
@@ -194,104 +194,104 @@ main:
     mov ax, @data 
     mov es, ax 
     
-    ;Получение имён файлов из cmd
+    ;РџРѕР»СѓС‡РµРЅРёРµ РёРјС‘РЅ С„Р°Р№Р»РѕРІ РёР· cmd
     call getFileNames
     
     mov ds, ax  
     
-    ;Проверка получения имён файлов
+    ;РџСЂРѕРІРµСЂРєР° РїРѕР»СѓС‡РµРЅРёСЏ РёРјС‘РЅ С„Р°Р№Р»РѕРІ
     call checkNames   
     
-    ;Открыть первый файл
+    ;РћС‚РєСЂС‹С‚СЊ РїРµСЂРІС‹Р№ С„Р°Р№Р»
     mov dx, offset firstFileName
     call openFileR
     mov firstFile, ax 
                   
-    ;Открыть второй файл                 
+    ;РћС‚РєСЂС‹С‚СЊ РІС‚РѕСЂРѕР№ С„Р°Р№Р»                 
     mov dx, offset secondFileName
     call openFileR
     mov secondFile, ax
      
-    ;Сравнить файлы по размерам 
+    ;РЎСЂР°РІРЅРёС‚СЊ С„Р°Р№Р»С‹ РїРѕ СЂР°Р·РјРµСЂР°Рј 
     call cmpSize    
     
-    ;Сравнить файлы по содержимому
+    ;РЎСЂР°РІРЅРёС‚СЊ С„Р°Р№Р»С‹ РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ
     call cmpFiles   
     
-    ;Файлы равны
+    ;Р¤Р°Р№Р»С‹ СЂР°РІРЅС‹
     outputString equal
     
     jmp closeFiles
 
-;Ошибка при открытии файла
+;РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р°
 openFail:
     
     outputString fopenError         
     
-    ;Файл не найден
+    ;Р¤Р°Р№Р» РЅРµ РЅР°Р№РґРµРЅ
     cmp ax, 02h   
     jne not2
     outputString fileNotFound
     jmp closeFiles     
     
 not2: 
-    ;Путь не найден 
+    ;РџСѓС‚СЊ РЅРµ РЅР°Р№РґРµРЅ 
     cmp ax, 03h 
     jne not3  
     outputString pathNotFound
     jmp closeFiles      
     
 not3:  
-    ;Открыто слишком много файлов
+    ;РћС‚РєСЂС‹С‚Рѕ СЃР»РёС€РєРѕРј РјРЅРѕРіРѕ С„Р°Р№Р»РѕРІ
     cmp ax, 04h
     jne not4   
     outputString 2ManyFiles
     jmp closeFiles
     
 not4:
-    ;Отказано в доступе
+    ;РћС‚РєР°Р·Р°РЅРѕ РІ РґРѕСЃС‚СѓРїРµ
     cmp ax, 05h
     jne not5 
     outputString accessDenied
     jmp closeFiles      
     
 not5: 
-    ;Некорректный режим доступа
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЂРµР¶РёРј РґРѕСЃС‚СѓРїР°
     outputString invalidAccessMode
            
-;Закрытие файлов           
+;Р—Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»РѕРІ           
 closeFiles:    
     closeFile firstFile                
     closeFile secondFile 
 
 exit:
-    ;Завершение работы
+    ;Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹
     mov ah, 4Ch
     int 21h 
 
-;Разные размеры    
+;Р Р°Р·РЅС‹Рµ СЂР°Р·РјРµСЂС‹    
 sizeExit: 
     outputString sizeNEqual
     jmp closeFiles 
 
-;Файлы не равны    
+;Р¤Р°Р№Р»С‹ РЅРµ СЂР°РІРЅС‹    
 notEqual:
     outputString nEqual
     jmp closeFiles 
 
-;Ошибка при чтении    
+;РћС€РёР±РєР° РїСЂРё С‡С‚РµРЅРёРё    
 failedReading: 
 
     outputString freadError
     cmp ax, 05h
     jne skip 
     
-    ;Отказано в доступе 
+    ;РћС‚РєР°Р·Р°РЅРѕ РІ РґРѕСЃС‚СѓРїРµ 
     outputString accessDenied
     jmp closeFiles
      
     skip: 
-    ;Некорректный идентификатор
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ
     outputString wrongHandle
     jmp closeFiles
     
