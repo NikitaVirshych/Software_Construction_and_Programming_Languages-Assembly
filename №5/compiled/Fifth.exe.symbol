@@ -1,0 +1,57 @@
+< THE SYMBOL TABLE >  Fifth.exe  --  emu8086 assembler version: 4.05 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+STACK                    	00000     	-5        	SEGMENT   	(ITSELF)  
+CODE                     	00010     	-5        	SEGMENT   	(ITSELF)  
+GETFILENAMES             	00003     	-1        	NEAR      	code      
+SKIP_LOC1TMP             	0000A     	-1        	LABEL     	code      
+COPY_LOC2TMP             	00013     	-1        	LABEL     	code      
+SKIP_LOC3TMP             	00021     	-1        	LABEL     	code      
+COPY_LOC4TMP             	0002A     	-1        	LABEL     	code      
+CMDEND                   	00035     	-1        	LABEL     	code      
+RESETFILES               	00037     	-1        	NEAR      	code      
+OPENFILER                	00056     	-1        	NEAR      	code      
+CMPSIZE                  	00066     	-1        	NEAR      	code      
+SIZENOTEQUAL             	00095     	-1        	LABEL     	code      
+CMPFILES                 	00099     	-1        	NEAR      	code      
+COMPARING                	0009C     	-1        	LABEL     	code      
+EOF                      	000D6     	-1        	LABEL     	code      
+CHECKNAMES               	000D7     	-1        	NEAR      	code      
+MAIN                     	000EC     	-1        	LABEL     	code      
+OPENFAIL                 	0011C     	-1        	LABEL     	code      
+NOT2                     	00135     	-1        	LABEL     	code      
+NOT3                     	00145     	-1        	LABEL     	code      
+NOT4                     	00155     	-1        	LABEL     	code      
+NOT5                     	00165     	-1        	LABEL     	code      
+CLOSEFILES               	0016E     	-1        	LABEL     	code      
+EXIT                     	0017E     	-1        	LABEL     	code      
+SIZEEXIT                 	00182     	-1        	LABEL     	code      
+NOTEQUAL                 	0018D     	-1        	LABEL     	code      
+FAILEDREADING            	00198     	-1        	LABEL     	code      
+SKIP                     	001B1     	-1        	LABEL     	code      
+NAMESNOTFOUND            	001BC     	-1        	LABEL     	code      
+DATA                     	0002D     	-5        	SEGMENT   	(ITSELF)  
+EQUAL                    	00000     	1         	VAR       	data      
+NEQUAL                   	00011     	1         	VAR       	data      
+FOPENERROR               	00025     	1         	VAR       	data      
+FREADERROR               	0004D     	1         	VAR       	data      
+CMDERROR                 	00075     	1         	VAR       	data      
+FILENOTFOUND             	000A0     	1         	VAR       	data      
+PATHNOTFOUND             	000B0     	1         	VAR       	data      
+2MANYFILES               	000C0     	1         	VAR       	data      
+ACCESSDENIED             	000D7     	1         	VAR       	data      
+INVALIDACCESSMODE        	000E6     	1         	VAR       	data      
+SIZENEQUAL               	000FB     	1         	VAR       	data      
+WRONGHANDLE              	00114     	1         	VAR       	data      
+FIRSTFILENAME            	00122     	1         	VAR       	data      
+SECONDFILENAME           	001A0     	1         	VAR       	data      
+BUF1                     	0021E     	1         	VAR       	data      
+BUF2                     	0021F     	1         	VAR       	data      
+READLEN                  	00220     	2         	VAR       	data      
+FIRSTFILE                	00222     	2         	VAR       	data      
+SECONDFILE               	00224     	2         	VAR       	data      
+===================================================================================================
+[ 01.05.2020  --  23:37:02 ] 
+< END >
+ 
