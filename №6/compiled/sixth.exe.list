@@ -1,0 +1,429 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+sixth.exe -- emu8086 assembler version: 4.05  
+ 
+[ 02.05.2020  --  17:22:24 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       ;Чтение readLen символов из file
+[   2]        :                                       readFile MACRO file
+[   3]        :                                       mov bx, file
+[   4]        :                                       mov cx, readLEN
+[   5]        :                                       mov dx, di
+[   6]        :                                       mov ah, 3Fh
+[   7]        :                                       int 21h
+[   8]        :                                       ENDM
+[   9]        :                                       
+[  10]        :                                       ;Закрытие файла
+[  11]        :                                       closeFile MACRO file
+[  12]        :                                       mov bx, file
+[  13]        :                                       mov ah, 3Eh
+[  14]        :                                       int 21h
+[  15]        :                                       ENDM
+[  16]        :                                       
+[  17]        :                                       ;Вывод строки на экран
+[  18]        :                                       outputString MACRO string
+[  19]        :                                       push ax
+[  20]        :                                       mov dx, offset string
+[  21]        :                                       mov ah, 09h
+[  22]        :                                       int 21h
+[  23]        :                                       pop ax
+[  24]        :                                       ENDM
+[  25]        :                                       
+[  26]        :                                       ;Пропуск пробелов в строке str
+[  27]        :                                       skipSpaces MACRO str
+[  28]        :                                       LOCAL skip
+[  29]        :                                       sub str, 1
+[  30]        :                                       skip:
+[  31]        :                                       inc str
+[  32]        :                                       cmp [str], ' '
+[  33]        :                                       je skip
+[  34]        :                                       ENDM
+[  35]        :                                       
+[  36]        :                                       ;Копирование из si в string до пробела или конца командной строки
+[  37]        :                                       copyWord MACRO string
+[  38]        :                                       LOCAL copy
+[  39]        :                                       mov di, offset string
+[  40]        :                                       
+[  41]        :                                       copy:
+[  42]        :                                       movsb
+[  43]        :                                       
+[  44]        :                                       cmp [si], 0Dh           ;Признак конца командной строки
+[  45]        :                                       je cmdEnd
+[  46]        :                                       
+[  47]        :                                       cmp [si], ' '
+[  48]        :                                       jne copy
+[  49]        :                                       
+[  50]        :                                       ENDM
+[  51]        :                                       
+[  52]        :                                       .model small
+[  53]        :                                       
+[  54]        :                                       .data
+[  55]        :                                       
+[  56]    0000: 00                                    eof db 0
+[  57]        :                                       
+[  58]        :                                       MAX_PATH equ 261
+[  59]    0001: 00 00 00 00 00 00 00 00 00 00 00 00   progPath db MAX_PATH dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00          
+[  60]        :                                       
+[  61]    0106: 09 41 6E 20 65 72 72 6F 72 20 6F 63   fopenError db 09h,"An error occurred while opening file: ",'$'
+                63 75 72 72 65 64 20 77 68 69 6C 65 
+                20 6F 70 65 6E 69 6E 67 20 66 69 6C 
+                65 3A 20 24                         
+[  62]    012E: 09 41 6E 20 65 72 72 6F 72 20 6F 63   freadError db 09h,"An error occurred while reading file: ",'$'
+                63 75 72 72 65 64 20 77 68 69 6C 65 
+                20 72 65 61 64 69 6E 67 20 66 69 6C 
+                65 3A 20 24                         
+[  63]    0156: 09 41 6E 20 65 72 72 6F 72 20 6F 63   execErr db 09h,"An error occurred while starting another programm: ",'$'
+                63 75 72 72 65 64 20 77 68 69 6C 65 
+                20 73 74 61 72 74 69 6E 67 20 61 6E 
+                6F 74 68 65 72 20 70 72 6F 67 72 61 
+                6D 6D 3A 20 24                      
+[  64]    018B: 09 43 6F 75 6C 64 27 74 20 67 65 74   cmdError db 09h,"Could't get file name from cmd arguments",'$'
+                20 66 69 6C 65 20 6E 61 6D 65 20 66 
+                72 6F 6D 20 63 6D 64 20 61 72 67 75 
+                6D 65 6E 74 73 24                   
+[  65]    01B5: 66 69 6C 65 20 6E 6F 74 20 66 6F 75   fileNotFound db "file not found.",'$'
+                6E 64 2E 24                         
+[  66]    01C5: 70 61 74 68 20 6E 6F 74 20 66 6F 75   pathNotFound db "path not found.",'$'
+                6E 64 2E 24                         
+[  67]    01D5: 74 6F 6F 20 6D 61 6E 79 20 66 69 6C   2ManyFiles db "too many files opened.",'$'
+                65 73 20 6F 70 65 6E 65 64 2E 24    
+[  68]    01EC: 61 63 63 65 73 73 20 64 65 6E 69 65   accessDenied db "access denied.",'$'
+                64 2E 24                            
+[  69]    01FB: 69 6E 76 61 6C 69 64 20 61 63 63 65   invalidAccessMode db "invalid access mode.",'$'
+                73 73 20 6D 6F 64 65 2E 24          
+[  70]    0210: 77 72 6F 6E 67 20 68 61 6E 64 6C 65   wrongHandle db "wrong handle.",'$'
+                2E 24                               
+[  71]    021E: 6E 6F 74 20 65 6E 6F 75 67 68 20 6D   notEnoughMem db "not enough memory.",'$'
+                65 6D 6F 72 79 2E 24                
+[  72]    0231: 77 72 6F 6E 67 20 73 75 72 72 6F 75   wrongSur db "wrong surrounding.",'$'
+                6E 64 69 6E 67 2E 24                
+[  73]    0244: 77 72 6F 6E 67 20 66 6F 72 6D 61 74   wrongFormat db "wrong format.",'$'
+                2E 24                               
+[  74]        :                                       
+[  75]    0252: 00 00 00 00 00 00 00 00 00 00 00 00   fileName db 126 dup(0)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00                   
+[  76]        :                                       
+[  77]    02D0: 01 00                                 readLEN dw 1
+[  78]    02D2: 00 00                                 file dw 0
+[  79]        :                                       
+[  80]    02D4: 00 00                                 command_line db 0, 0
+[  81]        :                                       
+[  82]    02D6: 00 00                                 epb dw 0
+[  83]    02D8: D4 02 00 00                           	dw offset command_line,0
+[  84]    02DC: 5C 00 00 00 6C 00 00 00               	dw 005Ch,0,006Ch,0
+[  85]        :                                       	
+[  86]    02E4:                                       DataSize=$-eof	
+[  87]        :                                       
+[  88]        :                                       .stack 100h
+[  89]        :                                       
+[  90]        :                                       .code
+[  91]        :                                       
+[  92]    03F0:                                       main:
+[  93]        :                                       ;Изменение размера памяти
+[  94]    03F0: B4 4A                                 mov ah, 4Ah
+[  95]    03F2: BB 6A 00                              	mov bx, ((CodeSize/16)+1)+((DataSize/16)+1)+32
+[  96]    03F5: CD 21                                 	int 21h
+[  97]        :                                       
+[  98]    03F7: B8 00 00                              mov ax, @data
+[  99]    03FA: 8E C0                                 mov es, ax
+[ 100]        :                                       
+[ 101]        :                                       ;Получение имени файла из cmd
+[ 102]    03FC: E8 10 01                              call getFileName
+[ 103]        :                                       
+[ 104]    03FF: 8E D8                                 mov ds, ax
+[ 105]        :                                       
+[ 106]        :                                       ;Проверка получения имени файла
+[ 107]    0401: E8 38 01                              call checkName
+[ 108]        :                                       
+[ 109]        :                                       ;Открыть файл
+[ 110]    0404: BA 52 02                              mov dx, offset fileName
+[ 111]    0407: E8 22 01                              call openFileR
+[ 112]    040A: A3 D2 02                              mov file, ax
+[ 113]        :                                       
+[ 114]    040D:                                       nextProgramm:
+[ 115]    040D: E8 76 01                              call clearPath              ;Очистить путь
+[ 116]    0410: E8 34 01                              call getProgPath            ;Получить путь из файла
+[ 117]        :                                       
+[ 118]        :                                       ;Загрузить и выполнить программу
+[ 119]    0413: B8 00 4B                              mov ax, 4B00h
+[ 120]    0416: BA 01 00                              mov dx, offset progPath
+[ 121]    0419: BB D6 02                              mov bx, offset epb
+[ 122]    041C: CD 21                                 int 21h
+[ 123]    041E: 73 03 E9 96 00                        jc execError
+[ 124]        :                                       
+[ 125]    0423: 80 3E 00 00 00                        cmp eof, 0
+[ 126]    0428: 74 E3                                 je nextProgramm
+[ 127]        :                                       
+[ 128]    042A: EB 52                                 jmp closeFile
+[ 129]        :                                       
+[ 130]        :                                       ;Ошибка при открытии файла
+[ 131]    042C:                                       openFail:
+[ 132]        :                                       
+[ 133]    042C: 50 BA 06 01 B4 09 CD 21 58            outputString fopenError
+[ 134]        :                                       
+[ 135]        :                                       ;Файл не найден
+[ 136]    0435: 3D 02 00                              cmp ax, 02h
+[ 137]    0438: 75 0B                                 jne not2
+[ 138]    043A: 50 BA B5 01 B4 09 CD 21 58            outputString fileNotFound
+[ 139]    0443: EB 39                                 jmp closeFile
+[ 140]        :                                       
+[ 141]    0445:                                       not2:
+[ 142]        :                                       ;Путь не найден
+[ 143]    0445: 3D 03 00                              cmp ax, 03h
+[ 144]    0448: 75 0B                                 jne not3
+[ 145]    044A: 50 BA C5 01 B4 09 CD 21 58            outputString pathNotFound
+[ 146]    0453: EB 29                                 jmp closeFile
+[ 147]        :                                       
+[ 148]    0455:                                       not3:
+[ 149]        :                                       ;Открыто слишком много файлов
+[ 150]    0455: 3D 04 00                              cmp ax, 04h
+[ 151]    0458: 75 0B                                 jne not4
+[ 152]    045A: 50 BA D5 01 B4 09 CD 21 58            outputString 2ManyFiles
+[ 153]    0463: EB 19                                 jmp closeFile
+[ 154]        :                                       
+[ 155]    0465:                                       not4:
+[ 156]        :                                       ;Отказано в доступе
+[ 157]    0465: 3D 05 00                              cmp ax, 05h
+[ 158]    0468: 75 0B                                 jne not5
+[ 159]    046A: 50 BA EC 01 B4 09 CD 21 58            outputString accessDenied
+[ 160]    0473: EB 09                                 jmp closeFile
+[ 161]        :                                       
+[ 162]    0475:                                       not5:
+[ 163]        :                                       ;Некорректный режим доступа
+[ 164]    0475: 50 BA FB 01 B4 09 CD 21 58            outputString invalidAccessMode
+[ 165]        :                                       
+[ 166]        :                                       ;Закрытие файла
+[ 167]    047E:                                       closeFile:
+[ 168]    047E: 8B 1E D2 02 B4 3E CD 21               closeFile file
+[ 169]        :                                       
+[ 170]    0486:                                       exit:
+[ 171]        :                                       ;Завершение работы
+[ 172]    0486: B4 4C                                 mov ah, 4Ch
+[ 173]    0488: CD 21                                 int 21h
+[ 174]        :                                       
+[ 175]        :                                       ;Ошибка при чтении
+[ 176]    048A:                                       failedReading:
+[ 177]        :                                       
+[ 178]    048A: 50 BA 2E 01 B4 09 CD 21 58            outputString freadError
+[ 179]    0493: 3D 05 00                              cmp ax, 05h
+[ 180]    0496: 75 0B                                 jne skip
+[ 181]        :                                       
+[ 182]        :                                       ;Отказано в доступе
+[ 183]    0498: 50 BA EC 01 B4 09 CD 21 58            outputString accessDenied
+[ 184]    04A1: EB DB                                 jmp closeFile
+[ 185]        :                                       
+[ 186]    04A3:                                       skip:
+[ 187]        :                                       ;Некорректный идентификатор
+[ 188]    04A3: 50 BA 10 02 B4 09 CD 21 58            outputString wrongHandle
+[ 189]    04AC: EB D0                                 jmp closeFile
+[ 190]        :                                       
+[ 191]    04AE:                                       namesNotFound:
+[ 192]        :                                       ;Пустая командная строка
+[ 193]    04AE: 50 BA 8B 01 B4 09 CD 21 58            outputString cmdError
+[ 194]    04B7: EB CD                                 jmp exit
+[ 195]        :                                       
+[ 196]    04B9:                                       execError:
+[ 197]        :                                       
+[ 198]    04B9: 50 BA 56 01 B4 09 CD 21 58            outputString execErr
+[ 199]        :                                       
+[ 200]        :                                       ;Файл не найден
+[ 201]    04C2: 3D 02 00                              cmp ax, 02h
+[ 202]    04C5: 75 0B                                 jne not2e
+[ 203]    04C7: 50 BA B5 01 B4 09 CD 21 58            outputString fileNotFound
+[ 204]    04D0: EB AC                                 jmp closeFile
+[ 205]        :                                       
+[ 206]    04D2:                                       not2e:
+[ 207]        :                                       ;Запрещен доступ
+[ 208]    04D2: 3D 05 00                              cmp ax, 05h
+[ 209]    04D5: 75 0B                                 jne not5e
+[ 210]    04D7: 50 BA EC 01 B4 09 CD 21 58            outputString accessDenied
+[ 211]    04E0: EB 9C                                 jmp closeFile
+[ 212]        :                                       
+[ 213]    04E2:                                       not5e:
+[ 214]        :                                       ;Недомтаточно памяти
+[ 215]    04E2: 3D 08 00                              cmp ax, 08h
+[ 216]    04E5: 75 0B                                 jne not8e
+[ 217]    04E7: 50 BA 1E 02 B4 09 CD 21 58            outputString notEnoughMem
+[ 218]    04F0: EB 8C                                 jmp closeFile
+[ 219]        :                                       
+[ 220]    04F2:                                       not8e:
+[ 221]        :                                       ;Неправильное окружение
+[ 222]    04F2: 3D 0A 00                              cmp ax, 0Ah
+[ 223]    04F5: 75 0C                                 jne notAe
+[ 224]    04F7: 50 BA 31 02 B4 09 CD 21 58            outputString wrongSur
+[ 225]    0500: E9 7B FF                              jmp closeFile
+[ 226]        :                                       
+[ 227]    0503:                                       notAe:
+[ 228]        :                                       ;Некорректный формат
+[ 229]    0503: 50 BA 44 02 B4 09 CD 21 58            outputString wrongFormat
+[ 230]    050C: E9 6F FF                              jmp closeFile
+[ 231]        :                                       
+[ 232]        :                                       
+[ 233]        :                                       ;Получение слова из командной строки
+[ 234]    050F:                                       getFileName proc
+[ 235]    050F: 60                                    pusha
+[ 236]        :                                       		
+[ 237]    0510: BE 82 00                              	mov si, 82h             ;Начало командной строки
+[ 238]        :                                       	
+[ 239]    0513: 83 EE 01 46 80 3C 20 74 FA            skipSpaces si           ;Пропуск пробелов
+[ 240]        :                                       	
+[ 241]    051C: BF 52 02 A4 80 3C 0D 74 05 80 3C 20   	copyWord fileName       ;Считывание слова
+                75 F5                               
+[ 242]        :                                       	
+[ 243]    052A:                                       	cmdEnd:	
+[ 244]    052A: 61                                    popa
+[ 245]    052B: C3                                    ret
+[ 246]        :                                       endp
+[ 247]        :                                       
+[ 248]        :                                       ;Открыть файл в режиме только чтение
+[ 249]    052C:                                       openFileR proc
+[ 250]    052C: 33 C9                                 xor cx, cx
+[ 251]    052E: 32 C0                                 xor al, al
+[ 252]    0530: B4 3D                                 mov ah, 3dh
+[ 253]    0532: B0 00                                 mov al, 00h
+[ 254]    0534: CD 21                                 int 21h
+[ 255]    0536: 73 03 E9 F1 FE                        jc openFail
+[ 256]    053B: C3                                    ret
+[ 257]        :                                       endp
+[ 258]        :                                       
+[ 259]        :                                       ;Проверка считывания имени файла из командной строки
+[ 260]    053C:                                       checkName proc
+[ 261]    053C: 80 3E 52 02 00                        cmp [filename], 0
+[ 262]    0541: 75 03 E9 68 FF                        je namesNotFound
+[ 263]    0546: C3                                    ret
+[ 264]        :                                       endp
+[ 265]        :                                       
+[ 266]        :                                       ;Чтение одной строки из файла
+[ 267]    0547:                                       getProgPath proc
+[ 268]    0547: 60                                    pusha
+[ 269]        :                                       
+[ 270]    0548: BF 01 00                              mov di, offset progPath
+[ 271]    054B: 4F                                    dec di
+[ 272]        :                                       
+[ 273]    054C:                                       reading:
+[ 274]    054C: 47                                    inc di
+[ 275]    054D: 8B 1E D2 02 8B 0E D0 02 8B D7 B4 3F   readFile file
+                CD 21                               
+[ 276]    055B: 73 03 E9 2A FF                        jc failedReading
+[ 277]        :                                       ;Прочитано 0 символов - конец файла
+[ 278]    0560: 3D 00 00                              cmp ax, 0
+[ 279]    0563: 74 1B                                 je eoff
+[ 280]        :                                       
+[ 281]    0565: 80 3D 0D                              cmp [di], 0Dh
+[ 282]    0568: 74 02                                 je lineEnd
+[ 283]        :                                       
+[ 284]    056A: EB E0                                 jmp reading
+[ 285]        :                                       
+[ 286]    056C:                                       lineEnd:
+[ 287]    056C: C6 05 00                              mov [di], 0
+[ 288]        :                                       
+[ 289]        :                                       ;Пропуск 1 символа в файле
+[ 290]    056F: BA 01 00                              mov dx, 1
+[ 291]    0572: 33 C9                                 xor cx, cx
+[ 292]    0574: 8B 1E D2 02                           mov bx, file
+[ 293]    0578: B0 01                                 mov al, 01h
+[ 294]    057A: B4 42                                 mov ah, 42h
+[ 295]    057C: CD 21                                 int 21h
+[ 296]        :                                       
+[ 297]    057E: 61                                    popa
+[ 298]    057F: C3                                    ret
+[ 299]        :                                       
+[ 300]    0580:                                       eoff:
+[ 301]    0580: FE 06 00 00                           inc eof
+[ 302]    0584: 61                                    popa
+[ 303]    0585: C3                                    ret
+[ 304]        :                                       endp
+[ 305]        :                                       
+[ 306]        :                                       ;Зануление пути исполняемой программы
+[ 307]    0586:                                       clearPath proc
+[ 308]    0586: BF 01 00                              mov di, offset progPath
+[ 309]    0589: B0 00                                 mov al, 0
+[ 310]    058B: B9 05 01                              mov cx, MAX_PATH
+[ 311]        :                                       
+[ 312]    058E: F3 AA                                 rep stosb
+[ 313]    0590: C3                                    ret
+[ 314]        :                                       endp
+[ 315]        :                                       
+[ 316]    0591:                                       CodeSize = $ - main
+[ 317]        :                                       
+[ 318]        :                                       end main
+[ 319]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 91      -   bytes on last page (l.byte)
+0003: 01      -   bytes on last page (h.byte)
+0004: 04      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 2F      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 01      -   SP - stack pointer (h.byte)
+0012: 0D      -   check sum (l.byte)
+0013: 2A      -   check sum (h.byte)
+0014: 00      -   IP - instruction pointer (l.byte)
+0015: 00      -   IP - instruction pointer (h.byte)
+0016: 3F      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 08      -   relocation table - offset inside segment (l.byte)
+001F: 00      -   relocation table - offset inside segment (h.byte)
+0020: 3F      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================
