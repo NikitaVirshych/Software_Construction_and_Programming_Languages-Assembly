@@ -12,26 +12,28 @@ COPY_LOC4TMP             	0002A     	-1        	LABEL     	code
 CMDEND                   	00035     	-1        	LABEL     	code      
 RESETFILES               	00037     	-1        	NEAR      	code      
 OPENFILER                	00056     	-1        	NEAR      	code      
-CMPSIZE                  	00066     	-1        	NEAR      	code      
-SIZENOTEQUAL             	00095     	-1        	LABEL     	code      
-CMPFILES                 	00099     	-1        	NEAR      	code      
-COMPARING                	0009C     	-1        	LABEL     	code      
-EOF                      	000D6     	-1        	LABEL     	code      
-CHECKNAMES               	000D7     	-1        	NEAR      	code      
-MAIN                     	000EC     	-1        	LABEL     	code      
-OPENFAIL                 	0011C     	-1        	LABEL     	code      
-NOT2                     	00135     	-1        	LABEL     	code      
-NOT3                     	00145     	-1        	LABEL     	code      
-NOT4                     	00155     	-1        	LABEL     	code      
-NOT5                     	00165     	-1        	LABEL     	code      
-CLOSEFILES               	0016E     	-1        	LABEL     	code      
-EXIT                     	0017E     	-1        	LABEL     	code      
-SIZEEXIT                 	00182     	-1        	LABEL     	code      
-NOTEQUAL                 	0018D     	-1        	LABEL     	code      
-FAILEDREADING            	00198     	-1        	LABEL     	code      
-SKIP                     	001B1     	-1        	LABEL     	code      
-NAMESNOTFOUND            	001BC     	-1        	LABEL     	code      
-DATA                     	0002D     	-5        	SEGMENT   	(ITSELF)  
+CMPFILES                 	00066     	-1        	NEAR      	code      
+COMPARING                	00069     	-1        	LABEL     	code      
+CMPSYM                   	000A7     	-1        	LABEL     	code      
+SKIPNEWLINE              	000B4     	-1        	LABEL     	code      
+SKIPNEWLINE1             	000C5     	-1        	LABEL     	code      
+SKIPNEWLINE2             	000EC     	-1        	LABEL     	code      
+EOF                      	00115     	-1        	LABEL     	code      
+CHECKNAMES               	00116     	-1        	NEAR      	code      
+MAIN                     	0012B     	-1        	LABEL     	code      
+OPENFAIL                 	00158     	-1        	LABEL     	code      
+NOT2                     	00171     	-1        	LABEL     	code      
+NOT3                     	00181     	-1        	LABEL     	code      
+NOT4                     	00191     	-1        	LABEL     	code      
+NOT5                     	001A1     	-1        	LABEL     	code      
+CLOSEFILES               	001AA     	-1        	LABEL     	code      
+EXIT                     	001BA     	-1        	LABEL     	code      
+SIZEEXIT                 	001BE     	-1        	LABEL     	code      
+NOTEQUAL                 	001C9     	-1        	LABEL     	code      
+FAILEDREADING            	001D4     	-1        	LABEL     	code      
+SKIP                     	001ED     	-1        	LABEL     	code      
+NAMESNOTFOUND            	001F8     	-1        	LABEL     	code      
+DATA                     	00031     	-5        	SEGMENT   	(ITSELF)  
 EQUAL                    	00000     	1         	VAR       	data      
 NEQUAL                   	00011     	1         	VAR       	data      
 FOPENERROR               	00025     	1         	VAR       	data      
@@ -52,6 +54,6 @@ READLEN                  	00220     	2         	VAR       	data
 FIRSTFILE                	00222     	2         	VAR       	data      
 SECONDFILE               	00224     	2         	VAR       	data      
 ===================================================================================================
-[ 01.05.2020  --  23:37:02 ] 
+[ 04.05.2020  --  11:23:09 ] 
 < END >
  
