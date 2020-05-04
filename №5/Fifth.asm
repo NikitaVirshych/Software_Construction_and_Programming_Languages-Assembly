@@ -21,17 +21,7 @@ resetFile MACRO file
     mov al, 00h
     mov ah, 42h
     int 21h      
-ENDM        
- 
-;Получение размера файла 
-getSize MACRO file  
-    xor cx, cx
-    xor dx, dx 
-    mov bx, file
-    mov al, 02h
-    mov ah, 42h
-    int 21h      
-ENDM  
+ENDM         
 
 ;Закрытие файла
 closeFile MACRO file  
@@ -114,39 +104,6 @@ openFileR proc
     ret    
 endp  
 
-;Сравнение файлов по размерам
-cmpSize proc 
-    pusha
-    
-    getSize firstFile       ;Получить размер первого файла
-    
-    ;Сохранить значения в стек
-    push ax
-    push dx 
-    
-    getSize secondFile      ;Получить размер второго файла
-    
-    ;Переместить значения в другую пару регистров
-    mov cx, ax
-    mov bx, dx 
-    
-    ;Вернуть размер первого файла
-    pop dx
-    pop ax
-    
-    ;Сравнить размер 1 и 2 файла
-    cmp ax, cx
-    jne sizeNotEqual 
-    cmp bx, dx
-    jne sizeNotEqual        
-            
-    popa
-    ret             
-    
-    sizeNotEqual:
-    popa
-    jmp sizeExit
-endp 
  
 ;Сравнение фалов по содержимому 
 cmpFiles proc 
@@ -159,12 +116,18 @@ cmpFiles proc
         jc failedReading
         ;Прочитано 0 символов - конец файла
         cmp ax, 0
-        je eof            
-        
+        je eof
        
         readFile secondFile, buf2   ;Прочитать символ из 2 файла
-        jc failedReading
+        jc failedReading 
+         
+        ;Символ конца строки в 1 файле 
+        cmp buf1, 0Ah
+        je skipNewline
+        cmp buf1, 0Dh            
+        je skipNewline
     
+    cmpSym:
     ;Сравнение символов    
     mov bl, buf1
     cmp bl, buf2
@@ -172,8 +135,44 @@ cmpFiles proc
     
     jmp notEqual 
     
+    skipNewline: 
+    ;Проверка символа конца файла во 2 файле
+    cmp buf2, 0Ah
+    je skipNewline1
+    cmp buf2, 0Dh            
+    je skipNewline1 
+      
+    jmp notEqual
+    
+    skipNewline1: 
+    ;Пропуск символов новой строки в 1 файле
+    readFile firstFile, buf1    ;Прочитать символ из 1 файла
+    jc failedReading
+    ;Прочитано 0 символов - конец файла
+    cmp ax, 0
+    je skipNewline2
+    
+    cmp buf1, 0Ah
+    je skipNewline1
+    cmp buf1, 0Dh            
+    je skipNewline1
+                        
+    skipNewline2: 
+    ;Пропуск символов новой строки во 1 файле
+    readFile secondFile, buf2   ;Прочитать символ из 2 файла
+    jc failedReading
+    cmp ax, 0
+    je eof
+    
+    cmp buf2, 0Ah
+    je skipNewline2
+    cmp buf2, 0Dh            
+    je skipNewline2
+    
+    jmp cmpSym
+    
     eof:
-    ret
+    ret      
 endp   
 
 ;Проверка считывания 2 имён файлов из командной строки
@@ -212,9 +211,6 @@ main:
     call openFileR
     mov secondFile, ax
      
-    ;Сравнить файлы по размерам 
-    call cmpSize    
-    
     ;Сравнить файлы по содержимому
     call cmpFiles   
     
