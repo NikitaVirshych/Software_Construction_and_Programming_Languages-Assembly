@@ -1,4 +1,4 @@
-;Чтение readLen символов из file
+;Р§С‚РµРЅРёРµ readLen СЃРёРјРІРѕР»РѕРІ РёР· file
 readFile MACRO file  
     mov bx, file 
     mov cx, readLEN
@@ -7,14 +7,14 @@ readFile MACRO file
     int 21h    
 ENDM             
  
-;Закрытие файла
+;Р—Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°
 closeFile MACRO file  
     mov bx, file 
     mov ah, 3Eh
     int 21h      
 ENDM
 
-;Вывод строки на экран
+;Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё РЅР° СЌРєСЂР°РЅ
 outputString MACRO string
     push ax
     mov dx, offset string
@@ -23,7 +23,7 @@ outputString MACRO string
     pop ax
 ENDM 
 
-;Пропуск пробелов в строке str
+;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ РІ СЃС‚СЂРѕРєРµ str
 skipSpaces MACRO str  
     LOCAL skip
     sub str, 1
@@ -33,7 +33,7 @@ skipSpaces MACRO str
     je skip
 ENDM
 
-;Копирование из si в string до пробела или конца командной строки
+;РљРѕРїРёСЂРѕРІР°РЅРёРµ РёР· si РІ string РґРѕ РїСЂРѕР±РµР»Р° РёР»Рё РєРѕРЅС†Р° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 copyWord MACRO string
     LOCAL copy
     mov di, offset string
@@ -41,7 +41,7 @@ copyWord MACRO string
     copy:
     movsb
     
-    cmp [si], 0Dh           ;Признак конца командной строки
+    cmp [si], 0Dh           ;РџСЂРёР·РЅР°Рє РєРѕРЅС†Р° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
     je cmdEnd
     
     cmp [si], ' '
@@ -90,7 +90,7 @@ DataSize=$-eof
 .code
 
 main:      
-    ;Изменение размера памяти
+    ;РР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂР° РїР°РјСЏС‚Рё
     mov ah, 4Ah
 	mov bx, ((CodeSize/16)+1)+((DataSize/16)+1)+32
 	int 21h
@@ -98,24 +98,24 @@ main:
     mov ax, @data 
     mov es, ax 
     
-    ;Получение имени файла из cmd
+    ;РџРѕР»СѓС‡РµРЅРёРµ РёРјРµРЅРё С„Р°Р№Р»Р° РёР· cmd
     call getFileName
     
     mov ds, ax
       
-    ;Проверка получения имени файла
+    ;РџСЂРѕРІРµСЂРєР° РїРѕР»СѓС‡РµРЅРёСЏ РёРјРµРЅРё С„Р°Р№Р»Р°
     call checkName      
     
-    ;Открыть файл
+    ;РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р»
     mov dx, offset fileName
     call openFileR
     mov file, ax 
     
     nextProgramm: 
-    call clearPath              ;Очистить путь
-    call getProgPath            ;Получить путь из файла
+    call clearPath              ;РћС‡РёСЃС‚РёС‚СЊ РїСѓС‚СЊ
+    call getProgPath            ;РџРѕР»СѓС‡РёС‚СЊ РїСѓС‚СЊ РёР· С„Р°Р№Р»Р°
 
-    ;Загрузить и выполнить программу
+    ;Р—Р°РіСЂСѓР·РёС‚СЊ Рё РІС‹РїРѕР»РЅРёС‚СЊ РїСЂРѕРіСЂР°РјРјСѓ
     mov ax, 4B00h
     mov dx, offset progPath 
     mov bx, offset epb
@@ -127,69 +127,69 @@ main:
     
     jmp closeFile
 
-;Ошибка при открытии файла
+;РћС€РёР±РєР° РїСЂРё РѕС‚РєСЂС‹С‚РёРё С„Р°Р№Р»Р°
 openFail:
     
     outputString fopenError         
     
-    ;Файл не найден
+    ;Р¤Р°Р№Р» РЅРµ РЅР°Р№РґРµРЅ
     cmp ax, 02h   
     jne not2
     outputString fileNotFound
     jmp closeFile     
     
 not2: 
-    ;Путь не найден 
+    ;РџСѓС‚СЊ РЅРµ РЅР°Р№РґРµРЅ 
     cmp ax, 03h 
     jne not3  
     outputString pathNotFound
     jmp closeFile      
     
 not3:  
-    ;Открыто слишком много файлов
+    ;РћС‚РєСЂС‹С‚Рѕ СЃР»РёС€РєРѕРј РјРЅРѕРіРѕ С„Р°Р№Р»РѕРІ
     cmp ax, 04h
     jne not4   
     outputString 2ManyFiles
     jmp closeFile
     
 not4:
-    ;Отказано в доступе
+    ;РћС‚РєР°Р·Р°РЅРѕ РІ РґРѕСЃС‚СѓРїРµ
     cmp ax, 05h
     jne not5 
     outputString accessDenied
     jmp closeFile      
     
 not5: 
-    ;Некорректный режим доступа
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ СЂРµР¶РёРј РґРѕСЃС‚СѓРїР°
     outputString invalidAccessMode
            
-;Закрытие файла           
+;Р—Р°РєСЂС‹С‚РёРµ С„Р°Р№Р»Р°           
 closeFile:    
     closeFile file                 
 
 exit:
-    ;Завершение работы
+    ;Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹
     mov ah, 4Ch
     int 21h 
 
-;Ошибка при чтении    
+;РћС€РёР±РєР° РїСЂРё С‡С‚РµРЅРёРё    
 failedReading: 
 
     outputString freadError
     cmp ax, 05h
     jne skip 
     
-    ;Отказано в доступе 
+    ;РћС‚РєР°Р·Р°РЅРѕ РІ РґРѕСЃС‚СѓРїРµ 
     outputString accessDenied
     jmp closeFile
      
     skip: 
-    ;Некорректный идентификатор
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ
     outputString wrongHandle
     jmp closeFile
     
 namesNotFound:  
-    ;Пустая командная строка
+    ;РџСѓСЃС‚Р°СЏ РєРѕРјР°РЅРґРЅР°СЏ СЃС‚СЂРѕРєР°
     outputString cmdError
     jmp exit   
     
@@ -197,55 +197,55 @@ execError:
 
     outputString execErr
         
-    ;Файл не найден
+    ;Р¤Р°Р№Р» РЅРµ РЅР°Р№РґРµРЅ
     cmp ax, 02h   
     jne not2e
     outputString fileNotFound
     jmp closeFile     
     
 not2e: 
-    ;Запрещен доступ
+    ;Р—Р°РїСЂРµС‰РµРЅ РґРѕСЃС‚СѓРї
     cmp ax, 05h 
     jne not5e 
     outputString accessDenied
     jmp closeFile      
     
 not5e:  
-    ;Недомтаточно памяти
+    ;РќРµРґРѕРјС‚Р°С‚РѕС‡РЅРѕ РїР°РјСЏС‚Рё
     cmp ax, 08h
     jne not8e   
     outputString notEnoughMem
     jmp closeFile
     
 not8e:
-    ;Неправильное окружение
+    ;РќРµРїСЂР°РІРёР»СЊРЅРѕРµ РѕРєСЂСѓР¶РµРЅРёРµ
     cmp ax, 0Ah
     jne notAe 
     outputString wrongSur
     jmp closeFile      
     
 notAe: 
-    ;Некорректный формат
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ С„РѕСЂРјР°С‚
     outputString wrongFormat
     jmp closeFile 
 
 
-;Получение слова из командной строки
+;РџРѕР»СѓС‡РµРЅРёРµ СЃР»РѕРІР° РёР· РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 getFileName proc
     pusha
 		
-	mov si, 82h             ;Начало командной строки
+	mov si, 82h             ;РќР°С‡Р°Р»Рѕ РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 	
-    skipSpaces si           ;Пропуск пробелов
+    skipSpaces si           ;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ
 	
-	copyWord fileName       ;Считывание слова
+	copyWord fileName       ;РЎС‡РёС‚С‹РІР°РЅРёРµ СЃР»РѕРІР°
 	
 	cmdEnd:	    
     popa
     ret
 endp
  
-;Открыть файл в режиме только чтение 
+;РћС‚РєСЂС‹С‚СЊ С„Р°Р№Р» РІ СЂРµР¶РёРјРµ С‚РѕР»СЊРєРѕ С‡С‚РµРЅРёРµ 
 openFileR proc 
     xor cx, cx 
     xor al, al
@@ -256,14 +256,14 @@ openFileR proc
     ret    
 endp  
 
-;Проверка считывания имени файла из командной строки
+;РџСЂРѕРІРµСЂРєР° СЃС‡РёС‚С‹РІР°РЅРёСЏ РёРјРµРЅРё С„Р°Р№Р»Р° РёР· РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 checkName proc    
     cmp [filename], 0
     je namesNotFound
     ret
 endp
 
-;Чтение одной строки из файла
+;Р§С‚РµРЅРёРµ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРё РёР· С„Р°Р№Р»Р°
 getProgPath proc
     pusha
     
@@ -274,7 +274,7 @@ getProgPath proc
     inc di
     readFile file
     jc failedReading
-    ;Прочитано 0 символов - конец файла
+    ;РџСЂРѕС‡РёС‚Р°РЅРѕ 0 СЃРёРјРІРѕР»РѕРІ - РєРѕРЅРµС† С„Р°Р№Р»Р°
     cmp ax, 0
     je eoff
     
@@ -286,7 +286,7 @@ getProgPath proc
     lineEnd:
     mov [di], 0
     
-    ;Пропуск 1 символа в файле 
+    ;РџСЂРѕРїСѓСЃРє 1 СЃРёРјРІРѕР»Р° РІ С„Р°Р№Р»Рµ 
     mov dx, 1
     xor cx, cx 
     mov bx, file
@@ -303,7 +303,7 @@ getProgPath proc
     ret
 endp 
 
-;Зануление пути исполняемой программы
+;Р—Р°РЅСѓР»РµРЅРёРµ РїСѓС‚Рё РёСЃРїРѕР»РЅСЏРµРјРѕР№ РїСЂРѕРіСЂР°РјРјС‹
 clearPath proc
     mov di, offset progPath
     mov al, 0
