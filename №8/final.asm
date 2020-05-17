@@ -5,24 +5,24 @@
 start:  
     jmp main
 
-;данные резидентной части             
-screenSize equ 2000             ;Стандартный видеорежим дос - 80х25 16-цветный 
-screenBuf dw screenSize dup(?)
-screenSaver dw screenSize dup(0)
+;РґР°РЅРЅС‹Рµ СЂРµР·РёРґРµРЅС‚РЅРѕР№ С‡Р°СЃС‚Рё             
+screenSize equ 2000                 ;РЎС‚Р°РЅРґР°СЂС‚РЅС‹Р№ РІРёРґРµРѕСЂРµР¶РёРј РґРѕСЃ - 80С…25 16-С†РІРµС‚РЅС‹Р№ 
+screenBuf dw screenSize dup(?)      ;Р‘СѓС„РµСЂ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРё СЌРєСЂР°РЅР°
+screenSaver dw screenSize dup(0)    ;РљР°СЂС‚РёРЅРєР° 
 
-;Адреса старых прерываний
+;РђРґСЂРµСЃР° СЃС‚Р°СЂС‹С… РїСЂРµСЂС‹РІР°РЅРёР№
 oldTimerHandler dd 0
 oldKeyboardHandler dd 0  
 
-delay dw 0     
-current dw 0  
+delay dw 0                          ;Р—Р°РґРµСЂР¶РєР° РІ СЃРµРєСѓРЅРґР°С…  
+current dw 0                        ;РџСЂРѕС€РµРґС€РµРµ РІСЂРµРјСЏ
 ticks db 18
-saving db 0
+saving db 0                         
 
-;Новое прерывание таймера
+;РќРѕРІРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ С‚Р°Р№РјРµСЂР°
 timerHandler proc far
     pushf 
-    ;Старый обработчик
+    ;РЎС‚Р°СЂС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє
     call dword ptr cs:oldTimerHandler
     
     pusha
@@ -55,10 +55,10 @@ timerHandler proc far
     iret
 timerHandler endp
 
-;Новое прерывание клавиатуры
+;РќРѕРІРѕРµ РїСЂРµСЂС‹РІР°РЅРёРµ РєР»Р°РІРёР°С‚СѓСЂС‹
 keyboardHandler proc far
     pushf  
-    ;Старый обработчик
+    ;РЎС‚Р°СЂС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє
     call dword ptr cs:oldKeyboardHandler
     
     pusha
@@ -67,7 +67,7 @@ keyboardHandler proc far
     push cs
     pop ds
     
-    ;Проверка нажатия Esc
+    ;РџСЂРѕРІРµСЂРєР° РЅР°Р¶Р°С‚РёСЏ Esc
     cli
         mov ah, 11h
         int 16h
@@ -76,15 +76,15 @@ keyboardHandler proc far
         cmp al, 1Bh
         jne keep
 
-        ;Восстановить старые обработчики
-        mov ds, WORD PTR cs:oldTimerHandler + 2
+        ;Р’РѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ СЃС‚Р°СЂС‹Рµ РѕР±СЂР°Р±РѕС‚С‡РёРєРё
         mov dx, WORD PTR cs:oldTimerHandler
+        mov ds, WORD PTR cs:oldTimerHandler + 2
         mov al, 1Ch
         mov ah, 25h
         int 21h 
 
-        mov ds, WORD PTR cs:oldKeyboardHandler + 2
         mov dx, WORD PTR cs:oldKeyboardHandler
+        mov ds, WORD PTR cs:oldKeyboardHandler + 2
         mov al, 09h
         mov ah, 25h
         int 21h 
@@ -98,8 +98,7 @@ keyboardHandler proc far
     
     cmp saving, 0
     je keyboardIntEnd
-
-    restore:    
+   
     call changeScreen
 
     keyboardIntEnd: 
@@ -114,7 +113,7 @@ keyboardHandler proc far
 keyboardHandler endp
 
 
-;Процедура сохранения текущего экрана
+;РџСЂРѕС†РµРґСѓСЂР° СЃРѕС…СЂР°РЅРµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ СЌРєСЂР°РЅР°
 save proc
     pusha 
     push cs
@@ -124,7 +123,7 @@ save proc
     
     mov cx, screenSize
     mov di, offset screenBuf
-    mov ax, 0B800h                  ;Видеопамять
+    mov ax, 0B800h                  ;Р’РёРґРµРѕРїР°РјСЏС‚СЊ
     mov ds, ax
     xor si, si
     rep movsw
@@ -132,7 +131,7 @@ save proc
     ret
 save endp
 
-;Процедура смены изображения на экране
+;РџСЂРѕС†РµРґСѓСЂР° СЃРјРµРЅС‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° СЌРєСЂР°РЅРµ
 changeScreen proc
     pusha 
     push cs
@@ -140,6 +139,7 @@ changeScreen proc
     
     mov cx, screenSize  
     
+    ;Р’С‹Р±РѕСЂ Р±СѓС„РµСЂР° РґР»СЏ РІС‹РІРѕРґР° РёР·РјРµРЅРµРЅРёРµ С„Р»Р°РіР°
     cmp saving, 0
     je scrSave
     mov si, offset screenBuf
@@ -152,7 +152,7 @@ changeScreen proc
     
     change:
     
-    mov ax, 0B800h                  ;Видеопамять
+    mov ax, 0B800h                  ;Р’РёРґРµРѕРїР°РјСЏС‚СЊ
     mov es, ax                    
     xor di, di
     rep movsw 
@@ -162,7 +162,7 @@ changeScreen endp
 
       
 main: 
-    call getDelay
+    call getDelay                   ;РџРѕР»СѓС‡РµРЅРёРµ Р·Р°РґРµСЂР¶РєРё РёР· РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
     
     cmp delay, 0
     je incorrectInput
@@ -172,6 +172,7 @@ main:
      
     cli 
         
+        ;РџРѕР»СѓС‡РµРЅРёРµ СЃС‚Р°СЂРѕРіРѕ РїСЂРµСЂС‹РІР°РЅРёСЏ С‚Р°Р№РјРµСЂР°
         mov al, 1Ch
         mov ah, 35h
         int 21h 
@@ -179,12 +180,13 @@ main:
         mov WORD PTR oldTimerHandler, bx
         mov WORD PTR oldTimerHandler + 2, es
         
-        ;переопределить прерывание rtc
+        ;РџРµСЂРµРѕРїСЂРµРґРµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ С‚Р°Р№РјРµСЂР°
         mov dx, offset timerHandler
         mov al, 1Ch
         mov ah, 25h
         int 21h 
-
+         
+        ;РџРѕР»СѓС‡РµРЅРёРµ СЃС‚Р°СЂРѕРіРѕ РїСЂРµСЂС‹РІР°РЅРёСЏ РєР»Р°РІРёР°С‚СѓСЂС‹
         mov al, 09h
         mov ah, 35h
         int 21h 
@@ -192,7 +194,7 @@ main:
         mov WORD PTR oldKeyboardHandler, bx
         mov WORD PTR oldKeyboardHandler + 2, es
         
-        ;переопределить прерывание клавиатуры
+        ;РџРµСЂРµРѕРїСЂРµРґРµРЅРёРµ РїСЂРµСЂС‹РІР°РЅРёСЏ РєР»Р°РІРёР°С‚СѓСЂС‹
         mov dx, offset keyboardHandler
         mov al, 09h
         mov ah, 25h
@@ -202,18 +204,18 @@ main:
     mov dx, offset turnoff
     call outputString 
    
-    ;оставить программу резидентной
+    ;РѕСЃС‚Р°РІРёС‚СЊ РїСЂРѕРіСЂР°РјРјСѓ СЂРµР·РёРґРµРЅС‚РЅРѕР№
     mov ax, 3100h      
     mov dx, (main-start+10Fh)/16
     int 21h           
     
-    ;Переполнение
+    ;РџРµСЂРµРїРѕР»РЅРµРЅРёРµ
     inputOverflow:
     mov dx, offset overflow
     call outputString
     jmp exit
     
-    ;Некорректный ввод числа          
+    ;РќРµРєРѕСЂСЂРµРєС‚РЅС‹Р№ РІРІРѕРґ С‡РёСЃР»Р°          
     incorrectInput:
     mov dx, offset error
     call outputString 
@@ -225,29 +227,29 @@ main:
 getDelay proc
     pusha
     
-    mov si, 82h                     ;Начало командной строки
+    mov si, 82h                     ;РќР°С‡Р°Р»Рѕ РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
     xor ax, ax
     
     converse:   
     mov bx, 0Ah
-    mul bx                          ;Умножение аккумулятора на 10    
-    jo inputOverflow                ;Проверка на переполнение
+    mul bx                          ;РЈРјРЅРѕР¶РµРЅРёРµ Р°РєРєСѓРјСѓР»СЏС‚РѕСЂР° РЅР° 10    
+    jo inputOverflow                ;РџСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµРїРѕР»РЅРµРЅРёРµ
     
-    mov bl, [si]                    ;Символ из строки
-    sub bx, '0'                     ;Отнимаем от ascii кода символа ascii код нуля
+    mov bl, [si]                    ;РЎРёРјРІРѕР» РёР· СЃС‚СЂРѕРєРё
+    sub bx, '0'                     ;РћС‚РЅРёРјР°РµРј РѕС‚ ascii РєРѕРґР° СЃРёРјРІРѕР»Р° ascii РєРѕРґ РЅСѓР»СЏ
     
-    ;Проверка символа на условие 0 <= x <= 9
+    ;РџСЂРѕРІРµСЂРєР° СЃРёРјРІРѕР»Р° РЅР° СѓСЃР»РѕРІРёРµ 0 <= x <= 9
     cmp bx, 9                       
     jg incorrectInput
     cmp bx, 0
     jl incorrectInput
     
-    add ax, bx                      ;Добавление нового разряда к аккумулятору
-    jo inputOverflow                ;Проверка на переполнение
+    add ax, bx                      ;Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕРіРѕ СЂР°Р·СЂСЏРґР° Рє Р°РєРєСѓРјСѓР»СЏС‚РѕСЂСѓ
+    jo inputOverflow                ;РџСЂРѕРІРµСЂРєР° РЅР° РїРµСЂРµРїРѕР»РЅРµРЅРёРµ
     
-    inc si                          ;Переход к следующему символу
+    inc si                          ;РџРµСЂРµС…РѕРґ Рє СЃР»РµРґСѓСЋС‰РµРјСѓ СЃРёРјРІРѕР»Сѓ
    
-    cmp [si], 0Dh                   ;Признак конца командной строки
+    cmp [si], 0Dh                   ;РџСЂРёР·РЅР°Рє РєРѕРЅС†Р° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
     jne converse
     
     mov delay, ax
@@ -256,7 +258,7 @@ getDelay proc
     ret
 getDelay endp 
 
-;Вывод строки на экран
+;Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё РЅР° СЌРєСЂР°РЅ
 outputString proc
     mov ah, 09h
     int 21h
