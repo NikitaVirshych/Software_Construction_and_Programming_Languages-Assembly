@@ -5,24 +5,19 @@
 start:  
     jmp main
 
-;данные резидентной части             
-screenSize equ 2000                 ;Стандартный видеорежим дос - 80х25 16-цветный 
-screenBuf dw screenSize dup(?)      ;Буфер для сохранени экрана
-screenSaver dw screenSize dup(0)    ;Картинка 
-
-;Адреса старых прерываний
+;Àäðåñà ñòàðûõ ïðåðûâàíèé
 oldTimerHandler dd 0
 oldKeyboardHandler dd 0  
 
-delay dw 0                          ;Задержка в секундах  
-current dw 0                        ;Прошедшее время
+delay dw 0                          ;Çàäåðæêà â ñåêóíäàõ  
+current dw 0                        ;Ïðîøåäøåå âðåìÿ
 ticks db 18
 saving db 0                         
 
-;Новое прерывание таймера
+;Íîâîå ïðåðûâàíèå òàéìåðà
 timerHandler proc far
     pushf 
-    ;Старый обработчик
+    ;Ñòàðûé îáðàáîò÷èê
     call dword ptr cs:oldTimerHandler
     
     pusha
@@ -45,7 +40,6 @@ timerHandler proc far
     mov ax, delay
     mov current, ax
     
-    call save
     call changeScreen
 
     timerIntEnd:
@@ -55,10 +49,10 @@ timerHandler proc far
     iret
 timerHandler endp
 
-;Новое прерывание клавиатуры
+;Íîâîå ïðåðûâàíèå êëàâèàòóðû
 keyboardHandler proc far
     pushf  
-    ;Старый обработчик
+    ;Ñòàðûé îáðàáîò÷èê
     call dword ptr cs:oldKeyboardHandler
     
     pusha
@@ -66,35 +60,6 @@ keyboardHandler proc far
     push ds
     push cs
     pop ds
-    
-    ;Проверка нажатия Esc
-    cli
-        mov ah, 11h
-        int 16h
-        jz keep
-
-        cmp al, 1Bh
-        jne keep
-
-        ;Восстановить старые обработчики
-        mov dx, WORD PTR cs:oldTimerHandler
-        mov ds, WORD PTR cs:oldTimerHandler + 2
-        mov al, 1Ch
-        mov ah, 25h
-        int 21h 
-
-        mov dx, WORD PTR cs:oldKeyboardHandler
-        mov ds, WORD PTR cs:oldKeyboardHandler + 2
-        mov al, 09h
-        mov ah, 25h
-        int 21h 
-
-        push cs
-        pop ds
-
-        keep:
-    sti
-    
     
     cmp saving, 0
     je keyboardIntEnd
@@ -112,57 +77,32 @@ keyboardHandler proc far
     iret
 keyboardHandler endp
 
-
-;Процедура сохранения текущего экрана
-save proc
-    pusha 
-    push cs
-    pop es
-    push cs
-    pop ds 
-    
-    mov cx, screenSize
-    mov di, offset screenBuf
-    mov ax, 0B800h                  ;Видеопамять
-    mov ds, ax
-    xor si, si
-    rep movsw
-    popa 
-    ret
-save endp
-
-;Процедура смены изображения на экране
+;Ïðîöåäóðà ñìåíû èçîáðàæåíèÿ íà ýêðàíå
 changeScreen proc
     pusha 
     push cs
     pop ds
     
-    mov cx, screenSize  
-    
-    ;Выбор буфера для вывода изменение флага
     cmp saving, 0
-    je scrSave
-    mov si, offset screenBuf
+    je new
+    mov ax, 0500h  
+    int 10h
     mov saving, 0 
-    jmp change
+    jmp changeEnd
     
-    scrSave:
-    mov si, offset screenSaver
+    new:
+    mov ax, 0501h   
+    int 10h
     mov saving, 1 
     
-    change:
-    
-    mov ax, 0B800h                  ;Видеопамять
-    mov es, ax                    
-    xor di, di
-    rep movsw 
+    changeEnd:
+
     popa
     ret            
 changeScreen endp
-
       
 main: 
-    call getDelay                   ;Получение задержки из командной строки
+    call getDelay                   ;Ïîëó÷åíèå çàäåðæêè èç êîìàíäíîé ñòðîêè
     
     cmp delay, 0
     je incorrectInput
@@ -172,7 +112,7 @@ main:
      
     cli 
         
-        ;Получение старого прерывания таймера
+        ;Ïîëó÷åíèå ñòàðîãî ïðåðûâàíèÿ òàéìåðà
         mov al, 1Ch
         mov ah, 35h
         int 21h 
@@ -180,13 +120,13 @@ main:
         mov WORD PTR oldTimerHandler, bx
         mov WORD PTR oldTimerHandler + 2, es
         
-        ;Переопредение прерывания таймера
+        ;Ïåðåîïðåäåíèå ïðåðûâàíèÿ òàéìåðà
         mov dx, offset timerHandler
         mov al, 1Ch
         mov ah, 25h
         int 21h 
          
-        ;Получение старого прерывания клавиатуры
+        ;Ïîëó÷åíèå ñòàðîãî ïðåðûâàíèÿ êëàâèàòóðû
         mov al, 09h
         mov ah, 35h
         int 21h 
@@ -194,7 +134,7 @@ main:
         mov WORD PTR oldKeyboardHandler, bx
         mov WORD PTR oldKeyboardHandler + 2, es
         
-        ;Переопредение прерывания клавиатуры
+        ;Ïåðåîïðåäåíèå ïðåðûâàíèÿ êëàâèàòóðû
         mov dx, offset keyboardHandler
         mov al, 09h
         mov ah, 25h
@@ -204,18 +144,18 @@ main:
     mov dx, offset turnoff
     call outputString 
    
-    ;оставить программу резидентной
+    ;îñòàâèòü ïðîãðàììó ðåçèäåíòíîé
     mov ax, 3100h      
     mov dx, (main-start+10Fh)/16
     int 21h           
     
-    ;Переполнение
+    ;Ïåðåïîëíåíèå
     inputOverflow:
     mov dx, offset overflow
     call outputString
     jmp exit
     
-    ;Некорректный ввод числа          
+    ;Íåêîððåêòíûé ââîä ÷èñëà          
     incorrectInput:
     mov dx, offset error
     call outputString 
@@ -227,29 +167,29 @@ main:
 getDelay proc
     pusha
     
-    mov si, 82h                     ;Начало командной строки
+    mov si, 82h                     ;Íà÷àëî êîìàíäíîé ñòðîêè
     xor ax, ax
     
     converse:   
     mov bx, 0Ah
-    mul bx                          ;Умножение аккумулятора на 10    
-    jo inputOverflow                ;Проверка на переполнение
+    mul bx                          ;Óìíîæåíèå àêêóìóëÿòîðà íà 10    
+    jo inputOverflow                ;Ïðîâåðêà íà ïåðåïîëíåíèå
     
-    mov bl, [si]                    ;Символ из строки
-    sub bx, '0'                     ;Отнимаем от ascii кода символа ascii код нуля
+    mov bl, [si]                    ;Ñèìâîë èç ñòðîêè
+    sub bx, '0'                     ;Îòíèìàåì îò ascii êîäà ñèìâîëà ascii êîä íóëÿ
     
-    ;Проверка символа на условие 0 <= x <= 9
+    ;Ïðîâåðêà ñèìâîëà íà óñëîâèå 0 <= x <= 9
     cmp bx, 9                       
     jg incorrectInput
     cmp bx, 0
     jl incorrectInput
     
-    add ax, bx                      ;Добавление нового разряда к аккумулятору
-    jo inputOverflow                ;Проверка на переполнение
+    add ax, bx                      ;Äîáàâëåíèå íîâîãî ðàçðÿäà ê àêêóìóëÿòîðó
+    jo inputOverflow                ;Ïðîâåðêà íà ïåðåïîëíåíèå
     
-    inc si                          ;Переход к следующему символу
+    inc si                          ;Ïåðåõîä ê ñëåäóþùåìó ñèìâîëó
    
-    cmp [si], 0Dh                   ;Признак конца командной строки
+    cmp [si], 0Dh                   ;Ïðèçíàê êîíöà êîìàíäíîé ñòðîêè
     jne converse
     
     mov delay, ax
@@ -258,7 +198,7 @@ getDelay proc
     ret
 getDelay endp 
 
-;Вывод строки на экран
+;Âûâîä ñòðîêè íà ýêðàí
 outputString proc
     mov ah, 09h
     int 21h
