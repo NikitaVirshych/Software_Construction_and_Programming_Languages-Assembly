@@ -9,7 +9,7 @@ maxSize equ 0C8h
 
 .code
 
-;Заносит в cx длину оставшейся части строки. str - строка, cur - текущее местопол. 
+;Р—Р°РЅРѕСЃРёС‚ РІ cx РґР»РёРЅСѓ РѕСЃС‚Р°РІС€РµР№СЃСЏ С‡Р°СЃС‚Рё СЃС‚СЂРѕРєРё. str - СЃС‚СЂРѕРєР°, cur - С‚РµРєСѓС‰РµРµ РјРµСЃС‚РѕРїРѕР». 
 len MACRO str, cur 
     xor cx, cx  
     mov cl, str[1]
@@ -17,7 +17,7 @@ len MACRO str, cur
     sub cx, cur    
 ENDM
 
-;Посимвольный вывод строки
+;РџРѕСЃРёРјРІРѕР»СЊРЅС‹Р№ РІС‹РІРѕРґ СЃС‚СЂРѕРєРё
 sym_output MACRO str
     mov cl, str+1
     mov si, offset str+2
@@ -29,7 +29,7 @@ sym_output MACRO str
     loop output   
 ENDM
 
-;Пропуск пробелов в строке str
+;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ РІ СЃС‚СЂРѕРєРµ str
 skipSpaces MACRO str  
     LOCAL skip
     sub str, 1
@@ -39,7 +39,7 @@ skipSpaces MACRO str
     je skip
 ENDM  
 
-;Замена символа old на new в строке str
+;Р—Р°РјРµРЅР° СЃРёРјРІРѕР»Р° old РЅР° new РІ СЃС‚СЂРѕРєРµ str
 removeSym MACRO str, old, new
     LOCAL skip
     mov cl, [str+1]
@@ -54,23 +54,23 @@ removeSym MACRO str, old, new
     loop remove 
 removeSym ENDM
 
-;Вывод строки на экран
+;Р’С‹РІРѕРґ СЃС‚СЂРѕРєРё РЅР° СЌРєСЂР°РЅ
 outputString proc
     mov ah, 09h
     int 21h
     ret
 outputString endp
 
-;Ввод строки
+;Р’РІРѕРґ СЃС‚СЂРѕРєРё
 inputString proc
     mov ah, 0Ah
     int 21h
     ret
 inputString endp
 
-;Поиск самого длинного слова: 
-;dx - первый символ самого длинного слова
-;ax - длина самого длинного слова
+;РџРѕРёСЃРє СЃР°РјРѕРіРѕ РґР»РёРЅРЅРѕРіРѕ СЃР»РѕРІР°: 
+;dx - РїРµСЂРІС‹Р№ СЃРёРјРІРѕР» СЃР°РјРѕРіРѕ РґР»РёРЅРЅРѕРіРѕ СЃР»РѕРІР°
+;ax - РґР»РёРЅР° СЃР°РјРѕРіРѕ РґР»РёРЅРЅРѕРіРѕ СЃР»РѕРІР°
 findMaxWord proc
     len string, si
     mov di, si
@@ -115,8 +115,8 @@ findMaxWord proc
     ret
 findMaxWord endp
  
-; di - Начало подстроки для реверса
-; cx - Длина подстроки для реверса
+; di - РќР°С‡Р°Р»Рѕ РїРѕРґСЃС‚СЂРѕРєРё РґР»СЏ СЂРµРІРµСЂСЃР°
+; cx - Р”Р»РёРЅР° РїРѕРґСЃС‚СЂРѕРєРё РґР»СЏ СЂРµРІРµСЂСЃР°
 reverse proc    
     rev_loop:
     mov bl, [di]
@@ -132,7 +132,7 @@ reverse proc
     ret
 reverse endp
 
-;Проверка конца строки
+;РџСЂРѕРІРµСЂРєР° РєРѕРЅС†Р° СЃС‚СЂРѕРєРё
 isEnd proc 
     len string, si
     cmp cx, 1
@@ -149,16 +149,16 @@ mov es, ax
 mov dx, offset enterStr
 call outputString
  
-;Ввод строки
-mov [string], maxSize          ; Установка максимального размера строки для int 21h-09h 
+;Р’РІРѕРґ СЃС‚СЂРѕРєРё
+mov [string], maxSize          ; РЈСЃС‚Р°РЅРѕРІРєР° РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° СЃС‚СЂРѕРєРё РґР»СЏ int 21h-09h 
 mov dx, offset string
 call inputString
 
-;Установка di и si на начало строки
+;РЈСЃС‚Р°РЅРѕРІРєР° di Рё si РЅР° РЅР°С‡Р°Р»Рѕ СЃС‚СЂРѕРєРё
 mov si, offset string[2]
 mov di, si 
 
-;Проверка на ввод пустой строки и строки из пробелов
+;РџСЂРѕРІРµСЂРєР° РЅР° РІРІРѕРґ РїСѓСЃС‚РѕР№ СЃС‚СЂРѕРєРё Рё СЃС‚СЂРѕРєРё РёР· РїСЂРѕР±РµР»РѕРІ
 skipSpaces si 
 mov di, si
 len string, si
@@ -171,39 +171,39 @@ sort:
 call findMaxWord 
 
 add dx, ax
-sub dx, 1                   ;dx - последняя буква слова для реверса
+sub dx, 1                   ;dx - РїРѕСЃР»РµРґРЅСЏСЏ Р±СѓРєРІР° СЃР»РѕРІР° РґР»СЏ СЂРµРІРµСЂСЃР°
 mov cx, dx
-sub cx, si                  ;cx=dx-si - длина подстроки для реверса
+sub cx, si                  ;cx=dx-si - РґР»РёРЅР° РїРѕРґСЃС‚СЂРѕРєРё РґР»СЏ СЂРµРІРµСЂСЃР°
 call reverse
 
 mov di, si                           
-mov cx, ax                  ;cx - длина самого длинного слова (для реверса) 
+mov cx, ax                  ;cx - РґР»РёРЅР° СЃР°РјРѕРіРѕ РґР»РёРЅРЅРѕРіРѕ СЃР»РѕРІР° (РґР»СЏ СЂРµРІРµСЂСЃР°) 
 sub cx, 1
 call reverse  
  
-add si, ax                  ;Сдвиг начала рабочей подстроки на длину вставленного слова
-skipSpaces si               ;Пропуск пробелов    
-call isEnd                  ;Проверка на конец строки
+add si, ax                  ;РЎРґРІРёРі РЅР°С‡Р°Р»Р° СЂР°Р±РѕС‡РµР№ РїРѕРґСЃС‚СЂРѕРєРё РЅР° РґР»РёРЅСѓ РІСЃС‚Р°РІР»РµРЅРЅРѕРіРѕ СЃР»РѕРІР°
+skipSpaces si               ;РџСЂРѕРїСѓСЃРє РїСЂРѕР±РµР»РѕРІ    
+call isEnd                  ;РџСЂРѕРІРµСЂРєР° РЅР° РєРѕРЅРµС† СЃС‚СЂРѕРєРё
 mov di, si
 mov cx, dx
-sub cx, si                  ;cx=dx-si - длина подстроки для реверса
+sub cx, si                  ;cx=dx-si - РґР»РёРЅР° РїРѕРґСЃС‚СЂРѕРєРё РґР»СЏ СЂРµРІРµСЂСЃР°
 call reverse                                                        
 
 jmp sort 
 
-;Вывод результата
+;Р’С‹РІРѕРґ СЂРµР·СѓР»СЊС‚Р°С‚Р°
 outputResult:
 mov dx, offset result
 call outputString
 sym_output string
 jmp Exit
 
-;Вывод сообщения о вводе пустой строки
+;Р’С‹РІРѕРґ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РІРІРѕРґРµ РїСѓСЃС‚РѕР№ СЃС‚СЂРѕРєРё
 strIsEmpty:
 mov dx, offset empty
 call outputString    
  
-;Завершение выполнения программы
+;Р—Р°РІРµСЂС€РµРЅРёРµ РІС‹РїРѕР»РЅРµРЅРёСЏ РїСЂРѕРіСЂР°РјРјС‹
 Exit:
 mov ax, 4ch
 int 21h 
